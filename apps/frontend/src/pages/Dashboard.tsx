@@ -1,7 +1,6 @@
 import { useHealth } from '../hooks/useHealth'
 import { useLogs } from '../hooks/useLogs'
 import { useRestartService, useDeployUpdate } from '../hooks/useServiceActions'
-import { HealthResponse } from '../lib/api'
 
 interface ApiError {
   message: string
@@ -105,7 +104,7 @@ export default function Dashboard() {
             </div>
             <div className="mt-3">
               <button
-                onClick={() => refetch()}
+                onClick={() => refetchHealth()}
                 className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm font-medium"
               >
                 Try Again

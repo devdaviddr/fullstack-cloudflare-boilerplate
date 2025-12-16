@@ -6,8 +6,8 @@ export default function Navigation() {
           <div className="flex items-center">
             <div className="flex-shrink-0 mr-3">
               <img
-                src="/src/assets/cube-logo.svg"
-                alt="Cube Logo"
+                src="https://developers.cloudflare.com/_astro/logo.DAG2yejx.svg"
+                alt="Cloudflare Logo"
                 className="h-8 w-8"
               />
             </div>

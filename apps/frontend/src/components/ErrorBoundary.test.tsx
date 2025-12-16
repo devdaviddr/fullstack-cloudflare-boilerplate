@@ -11,7 +11,7 @@ const NoError = () => <div>No error occurred</div>
 describe('ErrorBoundary', () => {
   const originalError = console.error
   beforeAll(() => {
-    console.error = jest.fn()
+    console.error = vi.fn()
   })
 
   afterAll(() => {
@@ -59,7 +59,7 @@ describe('ErrorBoundary', () => {
 
   it('refresh button reloads the page', async () => {
     const user = userEvent.setup()
-    const mockReload = jest.fn()
+    const mockReload = vi.fn()
     Object.defineProperty(window, 'location', {
       value: { reload: mockReload },
       writable: true,

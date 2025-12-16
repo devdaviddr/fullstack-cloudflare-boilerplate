@@ -32,3 +32,13 @@ export interface ActionResponse {
   message: string
   timestamp: string
 }
+
+export interface HealthResponse {
+  status: string
+  timestamp: string
+  stats: {
+    uptime: number
+    responseTime: number
+    requestCount: number
+  }
+}
