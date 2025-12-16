@@ -5,6 +5,23 @@ export const api = axios.create({
   timeout: 10000,
 })
 
+// Add response interceptor for better error handling
+api.interceptors.response.use(
+  response => response,
+  error => {
+    // Log errors in development
+    console.error('API Error:', error)
+
+    // Return a standardized error
+    return Promise.reject({
+      message:
+        error.response?.data?.message || error.message || 'An error occurred',
+      status: error.response?.status || 500,
+      data: error.response?.data,
+    })
+  }
+)
+
 export interface HealthResponse {
   status: string
   timestamp: string
