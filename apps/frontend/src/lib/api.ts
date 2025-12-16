@@ -42,3 +42,20 @@ export interface HealthResponse {
     requestCount: number
   }
 }
+
+export interface Todo {
+  id: string
+  text: string
+  completed: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateTodoRequest {
+  text: string
+}
+
+export interface UpdateTodoRequest {
+  text?: string
+  completed?: boolean
+}

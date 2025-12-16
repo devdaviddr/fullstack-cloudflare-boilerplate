@@ -4,6 +4,7 @@ import { queryClient } from './lib/queryClient'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import Navigation from './components/Navigation'
 import Dashboard from './pages/Dashboard'
+import TodoList from './pages/TodoList'
 
 function App() {
   return (
@@ -14,7 +15,8 @@ function App() {
             <Navigation />
             <div className="flex-1 overflow-auto">
               <Routes>
-                <Route path="/" element={<Dashboard />} />
+                <Route path="/" element={<TodoList />} />
+                <Route path="/settings" element={<Dashboard />} />
               </Routes>
             </div>
           </div>

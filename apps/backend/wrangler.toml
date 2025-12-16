@@ -13,3 +13,9 @@ preview_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 [[r2_buckets]]
 binding = "MY_BUCKET"
 bucket_name = "my-bucket"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "todo-db"
+database_id = "local-todo-db"
+migrations_dir = "migrations"
