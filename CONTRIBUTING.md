@@ -3,6 +3,7 @@
 ## Development Setup
 
 1. Install dependencies:
+
    ```bash
    pnpm install
    ```

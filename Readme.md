@@ -8,10 +8,11 @@ This boilerplate gives you a production-ready foundation for building fullstack 
 
 - **Frontend**: React 18 with Vite for fast development and TypeScript for type safety
 - **Backend**: Hono framework running on Cloudflare Workers for edge computing
+- **API Integration**: Robust error handling, retry logic, and CORS configuration
 - **Monorepo Management**: Turborepo for efficient build orchestration and task management
 - **Shared Code**: TypeScript types package for consistent interfaces across apps
 - **Development Tools**: ESLint, TypeScript, and hot reloading configured
-- **Deployment Ready**: Optimized for Cloudflare's ecosystem
+- **Deployment Ready**: Optimized for Cloudflare's ecosystem with environment variable support
 
 ## Architecture Overview
 
@@ -32,6 +33,7 @@ fullstack-cloudflare-boilerplate/
 ```
 
 **Why Turborepo?**
+
 - **Task Orchestration**: Runs tasks across packages in parallel, respecting dependencies
 - **Caching**: Caches build outputs to speed up subsequent runs
 - **Dependency Management**: Ensures packages are built in the correct order
@@ -55,19 +57,44 @@ fullstack-cloudflare-boilerplate/
 ### Installation
 
 1. **Clone and install dependencies:**
+
    ```bash
    git clone <your-repo-url>
    cd fullstack-cloudflare-boilerplate
    pnpm install
    ```
 
-2. **Start development servers:**
+2. **Set up environment variables:**
+
+   ```bash
+   # Copy the frontend environment template
+   cp apps/frontend/.env.example apps/frontend/.env
+   # Edit apps/frontend/.env with your production API URL when ready to deploy
+   ```
+
+3. **Start development servers:**
+
    ```bash
    pnpm run dev
    ```
+
    This will start both frontend (http://localhost:5173) and backend development servers concurrently.
 
-3. **Build for production:**
+4. **Build for production:**
+
+   ```bash
+   pnpm run build
+   ```
+
+5. **Start development servers:**
+
+   ```bash
+   pnpm run dev
+   ```
+
+   This will start both frontend (http://localhost:5173) and backend development servers concurrently.
+
+6. **Build for production:**
    ```bash
    pnpm run build
    ```
@@ -102,14 +129,14 @@ The `turbo.json` file defines the build pipeline:
 {
   "pipeline": {
     "build": {
-      "dependsOn": ["^build"],  // Build dependencies first
-      "outputs": ["dist/**"]    // Cache these outputs
+      "dependsOn": ["^build"], // Build dependencies first
+      "outputs": ["dist/**"] // Cache these outputs
     },
     "dev": {
-      "cache": false,           // Don't cache dev tasks
-      "persistent": true        // Keep running
+      "cache": false, // Don't cache dev tasks
+      "persistent": true // Keep running
     },
-    "lint": {},                 // Simple task, no dependencies
+    "lint": {}, // Simple task, no dependencies
     "typecheck": {}
   }
 }
@@ -124,18 +151,21 @@ The `turbo.json` file defines the build pipeline:
 #### Frontend App (`apps/frontend/`)
 
 A React application with:
+
 - Vite for fast development and building
 - TypeScript for type safety
 - ESLint for code quality
 - Hot module replacement (HMR)
 
 **Local Development:**
+
 ```bash
 pnpm run dev --filter frontend
 # Opens http://localhost:5173
 ```
 
 **Build:**
+
 ```bash
 pnpm run build --filter frontend
 ```
@@ -143,18 +173,21 @@ pnpm run build --filter frontend
 #### Backend App (`apps/backend/`)
 
 A Hono API server designed for Cloudflare Workers:
+
 - Edge runtime optimized
 - TypeScript support
 - Automatic scaling
 - Global CDN deployment
 
 **Local Development:**
+
 ```bash
 pnpm run dev --filter backend
 # Starts Wrangler dev server with hot reloading
 ```
 
 **Deployment:**
+
 ```bash
 pnpm run deploy --filter backend
 ```
@@ -162,11 +195,22 @@ pnpm run deploy --filter backend
 #### Shared Types (`packages/types/`)
 
 Contains TypeScript interfaces and types shared across apps:
+
 - API response types
 - Common data models
 - Type definitions
 
 Automatically built when running root commands.
+
+### API Integration & Error Handling
+
+This boilerplate includes robust API integration features:
+
+- **Automatic Retry Logic**: Failed requests are retried with exponential backoff (up to 3 attempts)
+- **Smart Error Classification**: Different retry strategies for network errors (5xx) vs client errors (4xx)
+- **Enhanced Error UI**: Detailed error messages with status codes and contextual information
+- **CORS Configuration**: Properly configured for cross-origin requests in production
+- **Environment-Aware API URLs**: Uses development proxy in dev, environment variables in production
 
 ## Deployment
 
@@ -175,6 +219,7 @@ Automatically built when running root commands.
 The backend deploys to Cloudflare Workers:
 
 1. **Configure Wrangler:**
+
    ```bash
    cd apps/backend
    npx wrangler auth login
@@ -189,29 +234,42 @@ The backend deploys to Cloudflare Workers:
 
 Deploy the frontend to Cloudflare Pages:
 
-1. **Build the app:**
+1. **Update environment variables:**
+
+   ```bash
+   # Edit apps/frontend/.env with your deployed Worker URL
+   VITE_API_URL=https://your-worker-name.your-subdomain.workers.dev
+   ```
+
+2. **Build the app:**
+
    ```bash
    pnpm run build --filter frontend
    ```
 
-2. **Deploy via Cloudflare Pages:**
+3. **Deploy via Cloudflare Pages:**
    - Connect your repository to Cloudflare Pages
    - Set build command: `pnpm run build --filter frontend`
    - Set build output directory: `dist`
+   - Add environment variable: `VITE_API_URL=https://your-worker-name.your-subdomain.workers.dev`
 
 ### Environment Variables
 
 Create `.env` files in each app directory:
 
 **Backend (`apps/backend/.env`):**
+
 ```bash
 MY_VARIABLE=production_value
 ```
 
 **Frontend (`apps/frontend/.env`):**
+
 ```bash
-VITE_API_URL=https://your-worker-url.workers.dev
+VITE_API_URL=https://your-worker-name.your-subdomain.workers.dev
 ```
+
+> **Note:** Copy from `apps/frontend/.env.example` and update with your actual Cloudflare Worker URL. In development, the frontend uses a proxy to the local backend. In production, it uses this environment variable to communicate with your deployed Worker.
 
 ## Development Tips
 

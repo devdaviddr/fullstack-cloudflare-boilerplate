@@ -3,9 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 export default function Navigation() {
   const location = useLocation()
 
-  const navItems = [
-    { path: '/', label: 'Dashboard' },
-  ]
+  const navItems = [{ path: '/', label: 'Dashboard' }]
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -16,7 +14,7 @@ export default function Navigation() {
               <h1 className="text-xl font-bold text-gray-900">Fullstack App</h1>
             </div>
             <div className="ml-10 flex items-baseline space-x-4">
-              {navItems.map((item) => (
+              {navItems.map(item => (
                 <Link
                   key={item.path}
                   to={item.path}
