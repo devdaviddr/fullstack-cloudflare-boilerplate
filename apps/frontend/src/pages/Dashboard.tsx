@@ -1,4 +1,7 @@
 import { useHealth } from '../hooks/useHealth'
+import { useLogs } from '../hooks/useLogs'
+import { useRestartService, useDeployUpdate } from '../hooks/useServiceActions'
+import { HealthResponse } from '../lib/api'
 
 interface ApiError {
   message: string
@@ -7,7 +10,57 @@ interface ApiError {
 }
 
 export default function Dashboard() {
-  const { data: health, isLoading, error, refetch } = useHealth()
+  const {
+    data: health,
+    isLoading: healthLoading,
+    error: healthError,
+    refetch: refetchHealth,
+  } = useHealth()
+  const {
+    data: logs,
+    isLoading: logsLoading,
+    error: logsError,
+    refetch: refetchLogs,
+  } = useLogs()
+  const restartService = useRestartService()
+  const deployUpdate = useDeployUpdate()
+
+  const formatUptime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    return `${hours}h ${minutes}m ${secs}s`
+  }
+
+  const handleRestart = async () => {
+    if (
+      confirm(
+        'Are you sure you want to restart the service? This may cause temporary downtime.'
+      )
+    ) {
+      try {
+        await restartService.mutateAsync()
+        alert('Service restart completed successfully!')
+      } catch (error) {
+        alert('Failed to restart service. Please check the logs for details.')
+      }
+    }
+  }
+
+  const handleDeploy = async () => {
+    if (
+      confirm(
+        'Are you sure you want to deploy an update? This will update the application.'
+      )
+    ) {
+      try {
+        await deployUpdate.mutateAsync()
+        alert('Deployment completed successfully!')
+      } catch (error) {
+        alert('Failed to deploy update. Please check the logs for details.')
+      }
+    }
+  }
 
   const renderError = (error: ApiError) => {
     const getErrorTitle = (status: number) => {
@@ -65,7 +118,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-full bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
@@ -74,7 +127,7 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Health Status Card */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
@@ -82,23 +135,23 @@ export default function Dashboard() {
                 Backend Health
               </h3>
               <button
-                onClick={() => refetch()}
+                onClick={() => refetchHealth()}
                 className="text-sm text-blue-600 hover:text-blue-800"
-                disabled={isLoading}
+                disabled={healthLoading}
               >
                 Refresh
               </button>
             </div>
 
             <div className="mt-4">
-              {isLoading && (
+              {healthLoading && (
                 <div className="flex items-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                   <span className="text-gray-600">Checking...</span>
                 </div>
               )}
 
-              {error && renderError(error as ApiError)}
+              {healthError && renderError(healthError as ApiError)}
 
               {health && (
                 <div
@@ -132,39 +185,150 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Stats Cards */}
+          {/* System Logs Card */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900">System Stats</h3>
-            <div className="mt-4 space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Uptime</span>
-                <span className="font-medium">99.9%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Response Time</span>
-                <span className="font-medium">45ms</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Requests</span>
-                <span className="font-medium">1,234</span>
-              </div>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-gray-900">System Logs</h3>
+              <button
+                onClick={() => refetchLogs()}
+                className="text-sm text-blue-600 hover:text-blue-800"
+                disabled={logsLoading}
+              >
+                Refresh
+              </button>
+            </div>
+
+            <div className="mt-4">
+              {logsLoading && (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-gray-600">Loading logs...</span>
+                </div>
+              )}
+
+              {logsError && renderError(logsError as ApiError)}
+
+              {logs && (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {logs.logs.length === 0 ? (
+                    <p className="text-gray-500 text-sm">No logs available</p>
+                  ) : (
+                    logs.logs.map((log, index) => (
+                      <div
+                        key={index}
+                        className="text-xs font-mono bg-gray-50 p-2 rounded border"
+                      >
+                        {log}
+                      </div>
+                    ))
+                  )}
+                  {logs.total > logs.logs.length && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      Showing last {logs.logs.length} of {logs.total} total logs
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Service Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Service Actions
+            </h3>
+            <div className="space-y-3">
+              <button
+                onClick={handleRestart}
+                disabled={restartService.isPending}
+                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white px-4 py-2 rounded-md font-medium flex items-center justify-center space-x-2"
+              >
+                {restartService.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Restarting...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                    <span>Restart Service</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleDeploy}
+                disabled={deployUpdate.isPending}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-md font-medium flex items-center justify-center space-x-2"
+              >
+                {deployUpdate.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Deploying...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                      />
+                    </svg>
+                    <span>Deploy Update</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>
-            <div className="mt-4 space-y-2">
-              <button className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
-                View Logs
-              </button>
-              <button className="w-full bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">
-                Restart Service
-              </button>
-              <button className="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
-                Deploy Update
-              </button>
+          {/* System Stats Card */}
+          {health?.stats && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                System Statistics
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {formatUptime(health.stats.uptime)}
+                  </div>
+                  <div className="text-sm text-gray-500">Uptime</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {health.stats.responseTime}ms
+                  </div>
+                  <div className="text-sm text-gray-500">Response Time</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {health.stats.requestCount.toLocaleString()}
+                  </div>
+                  <div className="text-sm text-gray-500">Total Requests</div>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

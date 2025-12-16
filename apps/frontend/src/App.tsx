@@ -10,11 +10,13 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <Router>
-          <div className="min-h-screen bg-gray-50">
+          <div className="h-screen flex flex-col">
             <Navigation />
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-            </Routes>
+            <div className="flex-1 overflow-auto">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+              </Routes>
+            </div>
           </div>
         </Router>
       </QueryClientProvider>

@@ -22,7 +22,13 @@ api.interceptors.response.use(
   }
 )
 
-export interface HealthResponse {
-  status: string
+export interface LogsResponse {
+  logs: string[]
+  total: number
+}
+
+export interface ActionResponse {
+  success: boolean
+  message: string
   timestamp: string
 }
