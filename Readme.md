@@ -44,6 +44,7 @@ Located in `apps/frontend/`. A React app built with Vite and TypeScript.
 Located in `apps/backend/`. A Hono API server for Cloudflare Workers.
 
 - `pnpm run dev --filter backend` - Start backend dev server (Wrangler)
+- `pnpm run build --filter backend` - Build backend for deployment
 - `pnpm run deploy --filter backend` - Deploy backend to Cloudflare
 
 ## Deployment

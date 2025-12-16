@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "build": "wrangler build",
+    "build": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy",
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc --noEmit"
@@ -19,6 +19,6 @@
     "@typescript-eslint/parser": "^6.14.0",
     "eslint": "^8.55.0",
     "typescript": "^5.2.2",
-    "wrangler": "^3.17.1"
+    "wrangler": "^4.54.0"
   }
 }
