@@ -6,7 +6,8 @@ export interface Env extends Record<string, unknown> {
 }
 
 export interface User {
-  uid: string
+  id: string
+  firebase_uid: string
   email: string
   name: string
 }

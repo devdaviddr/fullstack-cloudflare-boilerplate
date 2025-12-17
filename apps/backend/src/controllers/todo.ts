@@ -12,7 +12,7 @@ export class TodoController {
       const { results } = await c.env.DB.prepare(
         'SELECT id, text, completed, created_at, updated_at FROM todos WHERE user_id = ? ORDER BY created_at DESC'
       )
-        .bind(user.uid)
+        .bind(user.id)
         .all()
 
       return c.json(results || [])
@@ -28,17 +28,20 @@ export class TodoController {
   static async createTodo(c: Context<{ Bindings: Env; Variables: Variables }>) {
     const user = c.get('user')
 
-    let body: any
+    let body: unknown
     try {
       body = await c.req.json()
     } catch {
       return c.json({ error: 'Invalid JSON body' }, 400)
     }
 
-    const { text } = body
+    const { text } = body as { text: string }
 
     if (!text || typeof text !== 'string' || text.trim().length === 0) {
-      return c.json({ error: 'Text is required and must be a non-empty string' }, 400)
+      return c.json(
+        { error: 'Text is required and must be a non-empty string' },
+        400
+      )
     }
 
     if (text.trim().length > 500) {
@@ -52,7 +55,7 @@ export class TodoController {
       await c.env.DB.prepare(
         'INSERT INTO todos (id, text, completed, user_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
       )
-        .bind(id, text.trim(), 0, user.uid, now, now)
+        .bind(id, text.trim(), 0, user.id, now, now)
         .run()
 
       return c.json(
@@ -78,14 +81,14 @@ export class TodoController {
     const user = c.get('user')
     const id = c.req.param('id')
 
-    let body: any
+    let body: unknown
     try {
       body = await c.req.json()
     } catch {
       return c.json({ error: 'Invalid JSON body' }, 400)
     }
 
-    const { text, completed } = body
+    const { text, completed } = body as { text?: string; completed?: boolean }
 
     // Validate input
     if (text !== undefined) {
@@ -110,7 +113,7 @@ export class TodoController {
       const existing = await c.env.DB.prepare(
         'SELECT id FROM todos WHERE id = ? AND user_id = ?'
       )
-        .bind(id, user.uid)
+        .bind(id, user.id)
         .first()
 
       if (!existing) {
@@ -119,7 +122,7 @@ export class TodoController {
 
       // Build update query
       const updates: string[] = []
-      const values: any[] = []
+      const values: unknown[] = []
 
       if (text !== undefined) {
         updates.push('text = ?')
@@ -138,14 +141,14 @@ export class TodoController {
       await c.env.DB.prepare(
         `UPDATE todos SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`
       )
-        .bind(...values, id, user.uid)
+        .bind(...values, id, user.id)
         .run()
 
       // Fetch and return updated todo
       const updated = await c.env.DB.prepare(
         'SELECT id, text, completed, created_at, updated_at FROM todos WHERE id = ? AND user_id = ?'
       )
-        .bind(id, user.uid)
+        .bind(id, user.id)
         .first()
 
       return c.json(updated)
@@ -166,7 +169,7 @@ export class TodoController {
       const result = await c.env.DB.prepare(
         'DELETE FROM todos WHERE id = ? AND user_id = ?'
       )
-        .bind(id, user.uid)
+        .bind(id, user.id)
         .run()
 
       if (result.meta.changes === 0) {

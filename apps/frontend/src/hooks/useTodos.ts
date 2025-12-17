@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, Todo, CreateTodoRequest, UpdateTodoRequest } from '../lib/api'
+import { useAuth } from '../contexts/AuthContext'
 
 interface ApiError {
   message: string
@@ -8,8 +9,9 @@ interface ApiError {
 }
 
 export const useTodos = () => {
+  const { user } = useAuth()
   return useQuery<Todo[], ApiError>({
-    queryKey: ['todos'],
+    queryKey: ['todos', user?.uid || 'anonymous'],
     queryFn: async () => {
       const response = await api.get('/api/todos')
       return response.data
