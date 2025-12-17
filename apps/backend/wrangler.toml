@@ -4,6 +4,7 @@ compatibility_date = "2024-12-01"
 
 [vars]
 MY_VARIABLE = "production_value"
+FIREBASE_PROJECT_ID = "your_project_id_here"
 
 [[kv_namespaces]]
 binding = "MY_KV_NAMESPACE"

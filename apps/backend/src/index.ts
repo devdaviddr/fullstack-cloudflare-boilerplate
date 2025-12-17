@@ -3,6 +3,73 @@ import { cors } from 'hono/cors'
 
 const app = new Hono<{ Bindings: { DB: D1Database } }>()
 
+// Firebase token verification using JWT validation (compatible with Cloudflare Workers)
+const verifyFirebaseToken = async (token: string, projectId: string) => {
+  try {
+    // Decode JWT token (without verification first)
+    const parts = token.split('.')
+    if (parts.length !== 3) {
+      throw new Error('Invalid JWT token')
+    }
+
+    const header = JSON.parse(
+      atob(parts[0].replace(/-/g, '+').replace(/_/g, '/'))
+    )
+    const payload = JSON.parse(
+      atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))
+    )
+
+    // Basic JWT validation
+    if (payload.exp < Date.now() / 1000) {
+      throw new Error('Token expired')
+    }
+
+    if (payload.aud !== projectId) {
+      throw new Error('Invalid audience')
+    }
+
+    if (payload.iss !== `https://securetoken.google.com/${projectId}`) {
+      throw new Error('Invalid issuer')
+    }
+
+    return {
+      localId: payload.sub,
+      email: payload.email,
+      displayName: payload.name,
+    }
+  } catch (error) {
+    throw new Error('Invalid token')
+  }
+}
+
+// Authentication middleware
+const authMiddleware = async (c: any, next: any) => {
+  try {
+    const authHeader = c.req.header('Authorization')
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return c.json({ error: 'Missing or invalid authorization header' }, 401)
+    }
+
+    const token = authHeader.substring(7) // Remove 'Bearer ' prefix
+
+    // Verify Firebase token using JWT validation
+    const userData = await verifyFirebaseToken(token, c.env.FIREBASE_PROJECT_ID)
+
+    // Add user information to the context
+    c.set('user', {
+      uid: userData.localId,
+      email: userData.email,
+      name: userData.displayName || userData.email,
+    })
+
+    await next()
+  } catch (error) {
+    console.error('Authentication error:', error)
+    return c.json({ error: 'Invalid or expired token' }, 401)
+  }
+}
+
 // Track server start time for uptime calculation
 const serverStartTime = Date.now()
 let requestCount = 0
@@ -15,6 +82,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:5173',
+      'http://localhost:5174',
       'https://*.pages.dev',
       'https://*.cloudflare.com',
     ],
@@ -104,12 +172,16 @@ app.post('/api/deploy', async c => {
   })
 })
 
-// Todo API endpoints
-app.get('/api/todos', async c => {
+// Todo API endpoints (protected)
+app.get('/api/todos', authMiddleware, async c => {
   try {
+    const user = c.get('user')
+
     const { results } = await c.env.DB.prepare(
-      'SELECT * FROM todos ORDER BY created_at DESC'
-    ).all()
+      'SELECT id, text, completed, created_at, updated_at FROM todos WHERE user_id = ? ORDER BY created_at DESC'
+    )
+      .bind(user.uid)
+      .all()
 
     return c.json(results)
   } catch (error) {
@@ -118,8 +190,9 @@ app.get('/api/todos', async c => {
   }
 })
 
-app.post('/api/todos', async c => {
+app.post('/api/todos', authMiddleware, async c => {
   try {
+    const user = c.get('user')
     const { text }: { text: string } = await c.req.json()
 
     if (!text || typeof text !== 'string' || text.trim().length === 0) {
@@ -130,9 +203,9 @@ app.post('/api/todos', async c => {
     const now = new Date().toISOString()
 
     await c.env.DB.prepare(
-      'INSERT INTO todos (id, text, completed, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+      'INSERT INTO todos (id, text, completed, user_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
     )
-      .bind(id, text.trim(), false, now, now)
+      .bind(id, text.trim(), false, user.uid, now, now)
       .run()
 
     const todo = {
@@ -147,6 +220,217 @@ app.post('/api/todos', async c => {
   } catch (error) {
     console.error('Error creating todo:', error)
     return c.json({ error: 'Failed to create todo' }, 500)
+  }
+})
+
+app.put('/api/todos/:id', authMiddleware, async c => {
+  try {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const { text, completed }: { text?: string; completed?: boolean } =
+      await c.req.json()
+
+    if (
+      text !== undefined &&
+      (!text || typeof text !== 'string' || text.trim().length === 0)
+    ) {
+      return c.json({ error: 'Text cannot be empty' }, 400)
+    }
+
+    if (completed !== undefined && typeof completed !== 'boolean') {
+      return c.json({ error: 'Completed must be a boolean' }, 400)
+    }
+
+    // Check if todo exists and belongs to user
+    const existing = await c.env.DB.prepare(
+      'SELECT * FROM todos WHERE id = ? AND user_id = ?'
+    )
+      .bind(id, user.uid)
+      .first()
+
+    if (!existing) {
+      return c.json({ error: 'Todo not found or access denied' }, 404)
+    }
+
+    const updates: string[] = []
+    const values: any[] = []
+
+    if (text !== undefined) {
+      updates.push('text = ?')
+      values.push(text.trim())
+    }
+
+    if (completed !== undefined) {
+      updates.push('completed = ?')
+      values.push(completed)
+    }
+
+    if (updates.length > 0) {
+      updates.push('updated_at = ?')
+      values.push(new Date().toISOString())
+
+      await c.env.DB.prepare(
+        `UPDATE todos SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`
+      )
+        .bind(...values, id, user.uid)
+        .run()
+    }
+
+    // Fetch updated todo
+    const updated = await c.env.DB.prepare(
+      'SELECT id, text, completed, created_at, updated_at FROM todos WHERE id = ? AND user_id = ?'
+    )
+      .bind(id, user.uid)
+      .first()
+
+    return c.json(updated)
+  } catch (error) {
+    console.error('Error updating todo:', error)
+    return c.json({ error: 'Failed to update todo' }, 500)
+  }
+})
+
+app.delete('/api/todos/:id', authMiddleware, async c => {
+  try {
+    const user = c.get('user')
+    const id = c.req.param('id')
+
+    const result = await c.env.DB.prepare(
+      'DELETE FROM todos WHERE id = ? AND user_id = ?'
+    )
+      .bind(id, user.uid)
+      .run()
+
+    if (result.meta.changes === 0) {
+      return c.json({ error: 'Todo not found or access denied' }, 404)
+    }
+
+    return c.json({ success: true })
+  } catch (error) {
+    console.error('Error deleting todo:', error)
+    return c.json({ error: 'Failed to delete todo' }, 500)
+  }
+})
+
+app.post('/api/todos', authMiddleware, async c => {
+  try {
+    const user = c.get('user')
+    const { text }: { text: string } = await c.req.json()
+
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return c.json({ error: 'Text is required' }, 400)
+    }
+
+    const id = crypto.randomUUID()
+    const now = new Date().toISOString()
+
+    await c.env.DB.prepare(
+      'INSERT INTO todos (id, text, completed, user_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
+    )
+      .bind(id, text.trim(), false, user.uid, now, now)
+      .run()
+
+    const todo = {
+      id,
+      text: text.trim(),
+      completed: false,
+      created_at: now,
+      updated_at: now,
+    }
+
+    return c.json(todo, 201)
+  } catch (error) {
+    console.error('Error creating todo:', error)
+    return c.json({ error: 'Failed to create todo' }, 500)
+  }
+})
+
+app.put('/api/todos/:id', authMiddleware, async c => {
+  try {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const { text, completed }: { text?: string; completed?: boolean } =
+      await c.req.json()
+
+    if (
+      text !== undefined &&
+      (!text || typeof text !== 'string' || text.trim().length === 0)
+    ) {
+      return c.json({ error: 'Text cannot be empty' }, 400)
+    }
+
+    if (completed !== undefined && typeof completed !== 'boolean') {
+      return c.json({ error: 'Completed must be a boolean' }, 400)
+    }
+
+    // Check if todo exists and belongs to user
+    const existing = await c.env.DB.prepare(
+      'SELECT * FROM todos WHERE id = ? AND user_id = ?'
+    )
+      .bind(id, user.uid)
+      .first()
+
+    if (!existing) {
+      return c.json({ error: 'Todo not found or access denied' }, 404)
+    }
+
+    const updates: string[] = []
+    const values: any[] = []
+
+    if (text !== undefined) {
+      updates.push('text = ?')
+      values.push(text.trim())
+    }
+
+    if (completed !== undefined) {
+      updates.push('completed = ?')
+      values.push(completed)
+    }
+
+    if (updates.length > 0) {
+      updates.push('updated_at = ?')
+      values.push(new Date().toISOString())
+
+      await c.env.DB.prepare(
+        `UPDATE todos SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`
+      )
+        .bind(...values, id, user.uid)
+        .run()
+    }
+
+    // Fetch updated todo
+    const updated = await c.env.DB.prepare(
+      'SELECT id, text, completed, created_at, updated_at FROM todos WHERE id = ? AND user_id = ?'
+    )
+      .bind(id, user.uid)
+      .first()
+
+    return c.json(updated)
+  } catch (error) {
+    console.error('Error updating todo:', error)
+    return c.json({ error: 'Failed to update todo' }, 500)
+  }
+})
+
+app.delete('/api/todos/:id', authMiddleware, async c => {
+  try {
+    const user = c.get('user')
+    const id = c.req.param('id')
+
+    const result = await c.env.DB.prepare(
+      'DELETE FROM todos WHERE id = ? AND user_id = ?'
+    )
+      .bind(id, user.uid)
+      .run()
+
+    if (result.meta.changes === 0) {
+      return c.json({ error: 'Todo not found or access denied' }, 404)
+    }
+
+    return c.json({ success: true })
+  } catch (error) {
+    console.error('Error deleting todo:', error)
+    return c.json({ error: 'Failed to delete todo' }, 500)
   }
 })
 
