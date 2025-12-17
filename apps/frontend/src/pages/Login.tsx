@@ -8,7 +8,6 @@ export default function Login() {
     signInWithEmail,
     signUpWithEmail,
     loading,
-    isRedirecting,
     user,
   } = useAuth()
   const navigate = useNavigate()
@@ -21,11 +20,12 @@ export default function Login() {
 
   // Redirect to intended page after successful login
   useEffect(() => {
-    if (user && !loading && !isRedirecting) {
+    if (user && !loading) {
       const from = location.state?.from?.pathname || '/'
+      console.log('Login: Redirecting authenticated user to:', from)
       navigate(from, { replace: true })
     }
-  }, [user, loading, isRedirecting, navigate, location])
+  }, [user, loading])
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,24 +50,20 @@ export default function Login() {
     setAuthLoading(true)
 
     try {
-      // With redirect mode, this will redirect the user away
       await signInWithGoogle()
-      // This code won't execute immediately due to redirect
+      // User will be redirected by the useEffect above
     } catch (error: any) {
-      // Handle errors that occur before redirect
       setError(error.message || 'Google sign in failed')
       setAuthLoading(false)
     }
   }
 
-  if (loading || isRedirecting) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">
-            {isRedirecting ? 'Redirecting to Google...' : 'Loading...'}
-          </p>
+          <p className="mt-2 text-gray-600">Loading...</p>
         </div>
       </div>
     )

@@ -2,7 +2,7 @@ import axios from 'axios'
 import { auth } from './firebase'
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8788',
   timeout: 10000,
 })
 
@@ -13,9 +13,12 @@ api.interceptors.request.use(async config => {
     if (user) {
       const token = await user.getIdToken()
       config.headers.Authorization = `Bearer ${token}`
+      console.log('[API] Request with auth token for user:', user.email)
+    } else {
+      console.warn('[API] No authenticated user found for request')
     }
   } catch (error) {
-    console.error('Error getting auth token:', error)
+    console.error('[API] Error getting auth token:', error)
   }
   return config
 })
@@ -25,12 +28,18 @@ api.interceptors.response.use(
   response => response,
   error => {
     // Log errors in development
-    console.error('API Error:', error)
+    console.error('[API] Error:', error)
 
     // Handle authentication errors
     if (error.response?.status === 401) {
-      // Token might be expired, try to refresh
-      console.log('Authentication error - token may be expired')
+      console.error('[API] Authentication error - token may be expired or invalid')
+      console.error('[API] Error details:', error.response?.data)
+    }
+
+    // Handle network errors
+    if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+      console.error('[API] Network error - backend may not be running')
+      console.error('[API] Check if backend is running at:', api.defaults.baseURL)
     }
 
     // Return a standardized error

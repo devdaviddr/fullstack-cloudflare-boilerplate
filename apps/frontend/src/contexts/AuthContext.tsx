@@ -8,19 +8,17 @@ import React, {
 import {
   User,
   onAuthStateChanged,
-  signInWithRedirect,
+  signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
   AuthError,
-  getRedirectResult,
 } from 'firebase/auth'
 import { auth, googleProvider } from '../lib/firebase'
 
 interface AuthContextType {
   user: User | null
   loading: boolean
-  isRedirecting: boolean
   signInWithGoogle: () => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
   signUpWithEmail: (email: string, password: string) => Promise<void>
@@ -37,36 +35,24 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [isRedirecting, setIsRedirecting] = useState(false)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      setUser(user)
+    // Subscribe to auth state changes
+    const unsubscribe = onAuthStateChanged(auth, currentUser => {
+      console.log('Auth state changed:', currentUser?.email || 'null')
+      setUser(currentUser)
       setLoading(false)
-      setIsRedirecting(false)
     })
-
-    // Handle redirect result when returning from OAuth
-    getRedirectResult(auth)
-      .then(() => {
-        setIsRedirecting(false)
-      })
-      .catch(error => {
-        console.error('Redirect sign-in error:', error)
-        setLoading(false)
-        setIsRedirecting(false)
-      })
 
     return unsubscribe
   }, [])
 
   const signInWithGoogle = async () => {
     try {
-      setIsRedirecting(true)
-      await signInWithRedirect(auth, googleProvider)
+      const result = await signInWithPopup(auth, googleProvider)
+      console.log('Google sign-in successful:', result.user.email)
     } catch (error) {
       console.error('Google sign in error:', error)
-      setIsRedirecting(false)
       throw error
     }
   }
@@ -111,7 +97,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const value: AuthContextType = {
     user,
     loading,
-    isRedirecting,
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,

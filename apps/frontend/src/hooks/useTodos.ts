@@ -11,7 +11,7 @@ export const useTodos = () => {
   return useQuery<Todo[], ApiError>({
     queryKey: ['todos'],
     queryFn: async () => {
-      const response = await api.get('/todos')
+      const response = await api.get('/api/todos')
       return response.data
     },
   })
@@ -22,7 +22,7 @@ export const useCreateTodo = () => {
 
   return useMutation<Todo, ApiError, CreateTodoRequest>({
     mutationFn: async (data: CreateTodoRequest) => {
-      const response = await api.post('/todos', data)
+      const response = await api.post('/api/todos', data)
       return response.data
     },
     onSuccess: () => {
@@ -36,7 +36,7 @@ export const useUpdateTodo = () => {
 
   return useMutation<Todo, ApiError, { id: string; data: UpdateTodoRequest }>({
     mutationFn: async ({ id, data }) => {
-      const response = await api.put(`/todos/${id}`, data)
+      const response = await api.put(`/api/todos/${id}`, data)
       return response.data
     },
     onSuccess: () => {
@@ -50,7 +50,7 @@ export const useDeleteTodo = () => {
 
   return useMutation<{ success: boolean }, ApiError, string>({
     mutationFn: async (id: string) => {
-      const response = await api.delete(`/todos/${id}`)
+      const response = await api.delete(`/api/todos/${id}`)
       return response.data
     },
     onSuccess: () => {
