@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   useContext,
   useEffect,
@@ -12,7 +12,6 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  AuthError,
 } from 'firebase/auth'
 import { auth, googleProvider } from '../lib/firebase'
 

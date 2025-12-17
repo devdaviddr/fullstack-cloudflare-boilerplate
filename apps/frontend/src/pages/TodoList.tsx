@@ -116,20 +116,20 @@ export default function TodoList() {
         </div>
 
         {/* Add Todo Form */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex gap-3">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
               value={newTodo}
               onChange={e => setNewTodo(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Add a new task..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
             />
             <button
               onClick={addTodo}
               disabled={!newTodo.trim() || createTodo.isPending}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed font-medium flex items-center space-x-2"
+              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2 min-h-[48px] touch-manipulation"
             >
               {createTodo.isPending ? (
                 <>
@@ -145,7 +145,7 @@ export default function TodoList() {
 
         {/* Todo List */}
         <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-4 sm:p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium text-gray-900">Your Tasks</h3>
               {totalCount > 0 && (
@@ -156,7 +156,7 @@ export default function TodoList() {
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {todos.length === 0 ? (
               <div className="text-center py-12">
                 <svg
@@ -184,16 +184,16 @@ export default function TodoList() {
                 {todos.map(todo => (
                   <div
                     key={todo.id}
-                    className="flex items-center gap-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50"
+                    className="flex items-center gap-3 p-4 border border-gray-200 rounded-md hover:bg-gray-50 active:bg-gray-100 transition-colors"
                   >
                     <input
                       type="checkbox"
                       checked={todo.completed}
                       onChange={() => toggleTodo(todo.id)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded flex-shrink-0"
                     />
                     <span
-                      className={`flex-1 text-sm ${
+                      className={`flex-1 text-sm sm:text-base ${
                         todo.completed
                           ? 'line-through text-gray-500'
                           : 'text-gray-900'
@@ -203,11 +203,11 @@ export default function TodoList() {
                     </span>
                     <button
                       onClick={() => handleDeleteTodo(todo.id)}
-                      className="text-red-600 hover:text-red-800 p-1"
+                      className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
                       title="Delete task"
                     >
                       <svg
-                        className="h-4 w-4"
+                        className="h-5 w-5"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"

@@ -126,7 +126,7 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
           {/* Health Status Card */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
@@ -233,8 +233,8 @@ export default function Dashboard() {
         </div>
 
         {/* Service Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Service Actions
             </h3>
@@ -242,7 +242,7 @@ export default function Dashboard() {
               <button
                 onClick={handleRestart}
                 disabled={restartService.isPending}
-                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white px-4 py-2 rounded-md font-medium flex items-center justify-center space-x-2"
+                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white px-4 py-3 rounded-md font-medium flex items-center justify-center space-x-2 min-h-[48px] touch-manipulation"
               >
                 {restartService.isPending ? (
                   <>
@@ -271,7 +271,7 @@ export default function Dashboard() {
               <button
                 onClick={handleDeploy}
                 disabled={deployUpdate.isPending}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-md font-medium flex items-center justify-center space-x-2"
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-3 rounded-md font-medium flex items-center justify-center space-x-2 min-h-[48px] touch-manipulation"
               >
                 {deployUpdate.isPending ? (
                   <>
