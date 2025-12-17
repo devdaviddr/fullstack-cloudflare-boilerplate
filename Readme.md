@@ -64,7 +64,15 @@ fullstack-cloudflare-boilerplate/
    pnpm install
    ```
 
-2. **Set up environment variables:**
+2. **Set up local database:**
+
+   ```bash
+   cd apps/backend
+   ./setup-local-db.sh
+   cd ../..
+   ```
+
+3. **Set up environment variables:**
 
    ```bash
    # Copy the frontend environment template
@@ -72,7 +80,7 @@ fullstack-cloudflare-boilerplate/
    # Edit apps/frontend/.env with your production API URL when ready to deploy
    ```
 
-3. **Start development servers:**
+4. **Start development servers:**
 
    ```bash
    pnpm run dev
@@ -80,13 +88,13 @@ fullstack-cloudflare-boilerplate/
 
    This will start both frontend (http://localhost:5173) and backend development servers concurrently.
 
-4. **Build for production:**
+5. **Build for production:**
 
    ```bash
    pnpm run build
    ```
 
-5. **Start development servers:**
+6. **Start development servers:**
 
    ```bash
    pnpm run dev
@@ -94,7 +102,7 @@ fullstack-cloudflare-boilerplate/
 
    This will start both frontend (http://localhost:5173) and backend development servers concurrently.
 
-6. **Build for production:**
+7. **Build for production:**
    ```bash
    pnpm run build
    ```

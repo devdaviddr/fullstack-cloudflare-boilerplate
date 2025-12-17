@@ -2,7 +2,9 @@ import type { Hono } from 'hono'
 import type { Env, Variables } from '../types'
 import { serverStartTime, requestCount, logs } from '../middleware'
 
-export function setupPublicRoutes(app: Hono<{ Bindings: Env; Variables: Variables }>) {
+export function setupPublicRoutes(
+  app: Hono<{ Bindings: Env; Variables: Variables }>
+) {
   app.get('/', c => {
     return c.json({
       name: 'Fullstack Cloudflare Boilerplate API',
@@ -11,13 +13,35 @@ export function setupPublicRoutes(app: Hono<{ Bindings: Env; Variables: Variable
     })
   })
 
-  app.get('/api/health', c => {
+  app.get('/api/health', async c => {
     const uptime = Math.floor((Date.now() - serverStartTime) / 1000)
     const responseTime = Math.random() * 50 + 10
 
+    // Check DB connection
+    let dbStatus = 'ok'
+    try {
+      await c.env.DB.prepare('SELECT 1').first()
+    } catch (error) {
+      dbStatus = 'error'
+      console.error('[Health] DB connection failed:', error)
+    }
+
+    // Check auth config
+    let authStatus = 'ok'
+    if (!c.env.FIREBASE_PROJECT_ID) {
+      authStatus = 'error'
+      console.error('[Health] FIREBASE_PROJECT_ID not configured')
+    }
+
+    const status = dbStatus === 'ok' && authStatus === 'ok' ? 'ok' : 'degraded'
+
     return c.json({
-      status: 'ok',
+      status,
       timestamp: new Date().toISOString(),
+      checks: {
+        database: dbStatus,
+        auth: authStatus,
+      },
       stats: {
         uptime,
         responseTime: Math.round(responseTime * 100) / 100,
@@ -29,7 +53,9 @@ export function setupPublicRoutes(app: Hono<{ Bindings: Env; Variables: Variable
   app.get('/api/logs', c => {
     if (logs.length === 0) {
       logs.push(`[${new Date().toISOString()}] Server started`)
-      logs.push(`[${new Date().toISOString()}] Health check endpoint initialized`)
+      logs.push(
+        `[${new Date().toISOString()}] Health check endpoint initialized`
+      )
       logs.push(`[${new Date().toISOString()}] CORS middleware configured`)
     }
 
@@ -58,7 +84,9 @@ export function setupPublicRoutes(app: Hono<{ Bindings: Env; Variables: Variable
     logs.push(`[${timestamp}] Deployment update initiated`)
 
     await new Promise(resolve => setTimeout(resolve, 2000))
-    logs.push(`[${new Date().toISOString()}] Deployment update completed successfully`)
+    logs.push(
+      `[${new Date().toISOString()}] Deployment update completed successfully`
+    )
 
     return c.json({
       success: true,

@@ -26,20 +26,44 @@ api.interceptors.request.use(async config => {
 // Add response interceptor for better error handling
 api.interceptors.response.use(
   response => response,
-  error => {
+  async error => {
+    // Handle authentication errors with retry
+    if (error.response?.status === 401 && !error.config._retry) {
+      error.config._retry = true
+      try {
+        console.log('[API] Token expired, attempting refresh...')
+        const user = auth.currentUser
+        if (user) {
+          const newToken = await user.getIdToken(true) // Force refresh
+          error.config.headers.Authorization = `Bearer ${newToken}`
+          return api.request(error.config) // Retry the request
+        }
+      } catch (refreshError) {
+        console.error('[API] Token refresh failed:', refreshError)
+      }
+    }
+
     // Log errors in development
     console.error('[API] Error:', error)
 
     // Handle authentication errors
     if (error.response?.status === 401) {
-      console.error('[API] Authentication error - token may be expired or invalid')
+      console.error(
+        '[API] Authentication error - token may be expired or invalid'
+      )
       console.error('[API] Error details:', error.response?.data)
     }
 
     // Handle network errors
-    if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+    if (
+      error.code === 'ERR_NETWORK' ||
+      error.code === 'ERR_CONNECTION_REFUSED'
+    ) {
       console.error('[API] Network error - backend may not be running')
-      console.error('[API] Check if backend is running at:', api.defaults.baseURL)
+      console.error(
+        '[API] Check if backend is running at:',
+        api.defaults.baseURL
+      )
     }
 
     // Return a standardized error

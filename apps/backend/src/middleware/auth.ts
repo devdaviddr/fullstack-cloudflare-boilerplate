@@ -85,9 +85,29 @@ export async function authMiddleware(
     c.set('user', user)
     await next()
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Authentication failed'
-    console.error('[Auth] Token verification failed:', message)
-    return c.json({ error: message }, 401)
+    let message = 'Authentication failed'
+    let code = 'AUTH_FAILED'
+
+    if (error instanceof Error) {
+      if (error.message.includes('expired')) {
+        message = 'Authentication failed'
+        code = 'TOKEN_EXPIRED'
+      } else if (error.message.includes('audience')) {
+        message = 'Authentication failed'
+        code = 'INVALID_TOKEN'
+      } else if (error.message.includes('issuer')) {
+        message = 'Authentication failed'
+        code = 'INVALID_TOKEN'
+      } else if (error.message.includes('signature')) {
+        message = 'Authentication failed'
+        code = 'INVALID_TOKEN'
+      }
+    }
+
+    console.error(
+      '[Auth] Token verification failed:',
+      error instanceof Error ? error.message : 'Unknown error'
+    )
+    return c.json({ error: message, code }, 401)
   }
 }

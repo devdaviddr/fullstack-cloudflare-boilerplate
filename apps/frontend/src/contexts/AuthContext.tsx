@@ -87,7 +87,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const getIdToken = async (): Promise<string | null> => {
     if (!user) return null
     try {
-      return await user.getIdToken()
+      // Check if token is close to expiry (within 5 minutes)
+      const tokenResult = await user.getIdTokenResult()
+      const now = Date.now() / 1000
+      const exp = tokenResult.expirationTime
+        ? new Date(tokenResult.expirationTime).getTime() / 1000
+        : 0
+
+      if (exp - now < 300) {
+        // Less than 5 minutes left
+        console.log('[Auth] Token expiring soon, refreshing proactively...')
+        return await user.getIdToken(true) // Force refresh
+      }
+
+      return tokenResult.token
     } catch (error) {
       console.error('Error getting ID token:', error)
       return null
