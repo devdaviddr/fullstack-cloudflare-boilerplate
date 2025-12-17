@@ -1,63 +1,29 @@
-# Fullstack Cloudflare Boilerplate
+# Fullstack Cloudflare Todo App
 
-A modern monorepo template for building scalable fullstack applications using React (Vite + TypeScript) for the frontend and Hono (TypeScript) for the backend, deployed on Cloudflare's edge infrastructure.
+A modern, production-ready todo application built with React, TypeScript, and Cloudflare's edge infrastructure. Features Firebase authentication, real-time updates, and a responsive mobile-first design.
 
-## What This Boilerplate Provides
+## ✨ Features
 
-This boilerplate gives you a production-ready foundation for building fullstack applications with:
+- **🔐 Firebase Authentication**: Secure user authentication with Google sign-in
+- **📱 Mobile-First Design**: Responsive UI built with Tailwind CSS
+- **⚡ Real-time Updates**: Instant synchronization using React Query
+- **🗄️ Cloudflare D1 Database**: Serverless SQLite database for data persistence
+- **🌐 Edge Deployment**: Global CDN deployment on Cloudflare Workers & Pages
+- **🔄 Monorepo Architecture**: Efficient development with Turborepo
+- **📦 TypeScript**: Full type safety across frontend and backend
+- **🎨 Modern UI**: Clean, accessible interface with dark/light mode support
 
-- **Frontend**: React 18 with Vite for fast development and TypeScript for type safety
-- **Backend**: Hono framework running on Cloudflare Workers for edge computing
-- **API Integration**: Robust error handling, retry logic, and CORS configuration
-- **Monorepo Management**: Turborepo for efficient build orchestration and task management
-- **Shared Code**: TypeScript types package for consistent interfaces across apps
-- **Development Tools**: ESLint, TypeScript, and hot reloading configured
-- **Deployment Ready**: Optimized for Cloudflare's ecosystem with environment variable support
-
-## Architecture Overview
-
-### Turborepo Structure
-
-This project uses [Turborepo](https://turbo.build/repo) to manage the monorepo efficiently:
-
-```
-fullstack-cloudflare-boilerplate/
-├── apps/
-│   ├── frontend/     # React + Vite application
-│   └── backend/      # Hono API server (Cloudflare Workers)
-├── packages/
-│   └── types/        # Shared TypeScript definitions
-├── package.json      # Root dependencies and scripts
-├── pnpm-workspace.yaml # Workspace configuration
-└── turbo.json        # Build pipeline configuration
-```
-
-**Why Turborepo?**
-
-- **Task Orchestration**: Runs tasks across packages in parallel, respecting dependencies
-- **Caching**: Caches build outputs to speed up subsequent runs
-- **Dependency Management**: Ensures packages are built in the correct order
-- **Workspace Filtering**: Run commands on specific apps/packages with `--filter`
-
-### Tech Stack
-
-- **Frontend**: React 18, Vite 5, TypeScript, ESLint
-- **Backend**: Hono, TypeScript, Wrangler (Cloudflare CLI)
-- **Build Tools**: Turborepo, pnpm workspaces
-- **Deployment**: Cloudflare Workers (backend), Cloudflare Pages (frontend)
-
-## Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18 or higher)
 - [pnpm](https://pnpm.io/) (v8 or higher)
-- [Wrangler](https://developers.cloudflare.com/workers/wrangler/) (included as dev dependency)
+- [Wrangler](https://developers.cloudflare.com/workers/wrangler/) (Cloudflare CLI)
 
 ### Installation
 
-1. **Clone and install dependencies:**
-
+1. **Clone and install:**
    ```bash
    git clone <your-repo-url>
    cd fullstack-cloudflare-boilerplate
@@ -65,251 +31,219 @@ fullstack-cloudflare-boilerplate/
    ```
 
 2. **Set up local database:**
-
    ```bash
    cd apps/backend
    ./setup-local-db.sh
-   cd ../..
    ```
 
-3. **Set up environment variables:**
-
-   ```bash
-   # Copy the frontend environment template
-   cp apps/frontend/.env.example apps/frontend/.env
-   # Edit apps/frontend/.env with your production API URL when ready to deploy
-   ```
-
-4. **Start development servers:**
-
+3. **Start development:**
    ```bash
    pnpm run dev
    ```
 
-   This will start both frontend (http://localhost:5173) and backend development servers concurrently.
+   Visit [http://localhost:5173](http://localhost:5173) for the frontend and the backend will be available at the configured port.
 
-5. **Build for production:**
+## 🏗️ Architecture
 
+### Tech Stack
+
+**Frontend:**
+- React 18 with TypeScript
+- Vite for build tooling
+- Tailwind CSS for styling
+- React Query for state management
+- React Router for navigation
+- Firebase Auth for authentication
+
+**Backend:**
+- Hono framework on Cloudflare Workers
+- Cloudflare D1 (SQLite) database
+- TypeScript throughout
+- JWT authentication middleware
+
+**Infrastructure:**
+- Cloudflare Workers (API)
+- Cloudflare Pages (Frontend)
+- Cloudflare D1 (Database)
+- Turborepo (Monorepo management)
+
+### Project Structure
+
+```
+fullstack-cloudflare-boilerplate/
+├── apps/
+│   ├── frontend/          # React SPA
+│   │   ├── src/
+│   │   │   ├── components/  # Reusable UI components
+│   │   │   ├── pages/       # Route components
+│   │   │   ├── hooks/       # Custom React hooks
+│   │   │   ├── contexts/    # React contexts
+│   │   │   └── lib/         # Utilities & API client
+│   │   └── package.json
+│   └── backend/           # Hono API server
+│       ├── src/
+│       │   ├── routes/      # API route handlers
+│       │   ├── middleware/  # Custom middleware
+│       │   └── types/       # TypeScript definitions
+│       ├── migrations/      # Database migrations
+│       └── wrangler.toml    # Cloudflare config
+├── packages/
+│   └── types/             # Shared TypeScript types
+└── docs/
+    ├── deploy.md          # Deployment guide
+    └── schema.md          # Database schema docs
+```
+
+## 📋 API Endpoints
+
+### Authentication
+- `GET /api/health` - Health check
+- `POST /api/auth/verify` - Verify Firebase token
+
+### Todos
+- `GET /api/todos` - Get user's todos
+- `POST /api/todos` - Create new todo
+- `PUT /api/todos/:id` - Update todo
+- `DELETE /api/todos/:id` - Delete todo
+
+All endpoints require Firebase authentication via Bearer token.
+
+## 🗄️ Database Schema
+
+The application uses Cloudflare D1 with two main tables:
+
+### Users Table
+```sql
+- id: TEXT (Primary Key)
+- firebase_uid: TEXT (Unique, Firebase UID)
+- email: TEXT
+- name: TEXT
+- created_at: DATETIME
+- updated_at: DATETIME
+```
+
+### Todos Table
+```sql
+- id: TEXT (Primary Key)
+- user_id: TEXT (Foreign Key → users.id)
+- text: TEXT
+- completed: BOOLEAN
+- created_at: DATETIME
+- updated_at: DATETIME
+```
+
+See [schema.md](schema.md) for complete database documentation.
+
+## 🚀 Deployment
+
+### Manual Deployment
+
+Follow the comprehensive deployment guide in [deploy.md](deploy.md) for step-by-step instructions.
+
+### Quick Deploy
+
+1. **Backend:**
    ```bash
-   pnpm run build
+   cd apps/backend
+   wrangler deploy
    ```
 
-6. **Start development servers:**
-
+2. **Frontend:**
    ```bash
-   pnpm run dev
+   cd apps/frontend
+   npm run build
+   wrangler pages deploy dist
    ```
 
-   This will start both frontend (http://localhost:5173) and backend development servers concurrently.
+### Environment Setup
 
-7. **Build for production:**
-   ```bash
-   pnpm run build
-   ```
+**Required Environment Variables:**
 
-## Development Workflow
+- `FIREBASE_PROJECT_ID` - Your Firebase project ID
+- `FIREBASE_CLIENT_EMAIL` - Firebase service account email
+- `FIREBASE_PRIVATE_KEY` - Firebase service account private key
+
+## 🛠️ Development
 
 ### Available Scripts
 
-Run from the root directory:
-
 ```bash
 # Development
-pnpm run dev          # Start all dev servers
-pnpm run dev --filter frontend  # Start only frontend
-pnpm run dev --filter backend   # Start only backend
+pnpm run dev              # Start all services
+pnpm run dev --filter frontend    # Frontend only
+pnpm run dev --filter backend     # Backend only
 
 # Building
-pnpm run build        # Build all apps
+pnpm run build            # Build all apps
 pnpm run build --filter frontend
 pnpm run build --filter backend
 
 # Quality checks
-pnpm run lint         # Lint all code
-pnpm run typecheck    # TypeScript checks
+pnpm run lint             # Lint all code
+pnpm run typecheck        # TypeScript checks
+pnpm run format           # Format code with Prettier
+
+# Database
+cd apps/backend && ./setup-local-db.sh  # Setup local D1 database
 ```
 
-### How Turborepo Pipelines Work
+### Key Features Implemented
 
-The `turbo.json` file defines the build pipeline:
+- ✅ **User Authentication**: Firebase Auth with Google sign-in
+- ✅ **Todo CRUD**: Create, read, update, delete todos
+- ✅ **Real-time UI**: React Query for optimistic updates
+- ✅ **Mobile Responsive**: Touch-friendly interface
+- ✅ **Error Handling**: Comprehensive error boundaries and retry logic
+- ✅ **Type Safety**: Full TypeScript coverage
+- ✅ **Database Relations**: Foreign key constraints and cascading deletes
+- ✅ **API Security**: JWT token validation and user isolation
 
-```json
-{
-  "pipeline": {
-    "build": {
-      "dependsOn": ["^build"], // Build dependencies first
-      "outputs": ["dist/**"] // Cache these outputs
-    },
-    "dev": {
-      "cache": false, // Don't cache dev tasks
-      "persistent": true // Keep running
-    },
-    "lint": {}, // Simple task, no dependencies
-    "typecheck": {}
-  }
-}
-```
+### Adding New Features
 
-- `^build` means "build dependencies first" - if package A depends on package B, B builds before A
-- Outputs are cached to speed up future builds
-- Dev tasks run persistently and aren't cached
+1. **Database Changes**: Create new migration files in `apps/backend/migrations/`
+2. **API Routes**: Add routes in `apps/backend/src/routes/`
+3. **Frontend Components**: Add to `apps/frontend/src/components/`
+4. **Types**: Update shared types in `packages/types/src/`
 
-### Working with Individual Apps
+## 🔧 Configuration
 
-#### Frontend App (`apps/frontend/`)
+### Firebase Setup
 
-A React application with:
+1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Enable Google Authentication
+3. Create a service account and download the key
+4. Add credentials to your Cloudflare Worker secrets
 
-- Vite for fast development and building
-- TypeScript for type safety
-- ESLint for code quality
-- Hot module replacement (HMR)
+### Cloudflare Setup
 
-**Local Development:**
+1. Sign up at [cloudflare.com](https://cloudflare.com)
+2. Install Wrangler CLI
+3. Create D1 database: `wrangler d1 create todo-db`
+4. Update `wrangler.toml` with your database ID
 
-```bash
-pnpm run dev --filter frontend
-# Opens http://localhost:5173
-```
+## 📚 Documentation
 
-**Build:**
+- **[deploy.md](deploy.md)** - Complete deployment guide
+- **[schema.md](schema.md)** - Database schema and API documentation
 
-```bash
-pnpm run build --filter frontend
-```
+## 🤝 Contributing
 
-#### Backend App (`apps/backend/`)
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests: `pnpm run lint && pnpm run typecheck`
+5. Submit a pull request
 
-A Hono API server designed for Cloudflare Workers:
+## 📄 License
 
-- Edge runtime optimized
-- TypeScript support
-- Automatic scaling
-- Global CDN deployment
+MIT License - see LICENSE file for details.
 
-**Local Development:**
+## 🔗 Links
 
-```bash
-pnpm run dev --filter backend
-# Starts Wrangler dev server with hot reloading
-```
-
-**Deployment:**
-
-```bash
-pnpm run deploy --filter backend
-```
-
-#### Shared Types (`packages/types/`)
-
-Contains TypeScript interfaces and types shared across apps:
-
-- API response types
-- Common data models
-- Type definitions
-
-Automatically built when running root commands.
-
-### API Integration & Error Handling
-
-This boilerplate includes robust API integration features:
-
-- **Automatic Retry Logic**: Failed requests are retried with exponential backoff (up to 3 attempts)
-- **Smart Error Classification**: Different retry strategies for network errors (5xx) vs client errors (4xx)
-- **Enhanced Error UI**: Detailed error messages with status codes and contextual information
-- **CORS Configuration**: Properly configured for cross-origin requests in production
-- **Environment-Aware API URLs**: Uses development proxy in dev, environment variables in production
-
-## Deployment
-
-### Backend (Cloudflare Workers)
-
-The backend deploys to Cloudflare Workers:
-
-1. **Configure Wrangler:**
-
-   ```bash
-   cd apps/backend
-   npx wrangler auth login
-   ```
-
-2. **Deploy:**
-   ```bash
-   pnpm run deploy --filter backend
-   ```
-
-### Frontend (Cloudflare Pages)
-
-Deploy the frontend to Cloudflare Pages:
-
-1. **Update environment variables:**
-
-   ```bash
-   # Edit apps/frontend/.env with your deployed Worker URL
-   VITE_API_URL=https://your-worker-name.your-subdomain.workers.dev
-   ```
-
-2. **Build the app:**
-
-   ```bash
-   pnpm run build --filter frontend
-   ```
-
-3. **Deploy via Cloudflare Pages:**
-   - Connect your repository to Cloudflare Pages
-   - Set build command: `pnpm run build --filter frontend`
-   - Set build output directory: `dist`
-   - Add environment variable: `VITE_API_URL=https://your-worker-name.your-subdomain.workers.dev`
-
-### Environment Variables
-
-Create `.env` files in each app directory:
-
-**Backend (`apps/backend/.env`):**
-
-```bash
-MY_VARIABLE=production_value
-```
-
-**Frontend (`apps/frontend/.env`):**
-
-```bash
-VITE_API_URL=https://your-worker-name.your-subdomain.workers.dev
-```
-
-> **Note:** Copy from `apps/frontend/.env.example` and update with your actual Cloudflare Worker URL. In development, the frontend uses a proxy to the local backend. In production, it uses this environment variable to communicate with your deployed Worker.
-
-## Development Tips
-
-### Adding New Dependencies
-
-- **Root dependencies**: `pnpm add -D turbo` (affects all packages)
-- **App-specific**: `pnpm add react --filter frontend`
-- **Shared packages**: Add to `packages/types/package.json`
-
-### Code Organization
-
-- Keep shared logic in `packages/`
-- App-specific code stays in respective `apps/` directories
-- Use absolute imports with workspace references: `import { ApiResponse } from '@fullstack/types'`
-
-### Performance
-
-- Turborepo caches build outputs automatically
-- Use `turbo prune` to create deployment packages
-- Parallel task execution speeds up development
-
-## Contributing
-
-1. Follow the existing code style (ESLint + TypeScript)
-2. Run `pnpm run lint` and `pnpm run typecheck` before committing
-3. Test changes in both apps
-4. Update documentation as needed
-
-## Resources
-
-- [Turborepo Documentation](https://turbo.build/repo/docs)
-- [Vite Documentation](https://vitejs.dev/)
-- [Hono Documentation](https://hono.dev/)
-- [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
-- [Cloudflare Pages Docs](https://developers.cloudflare.com/pages/)
+- [Live Demo](https://your-deployed-app.pages.dev)
+- [API Documentation](schema.md)
+- [Deployment Guide](deploy.md)
+- [Cloudflare Workers](https://workers.cloudflare.com)
+- [Firebase Auth](https://firebase.google.com/docs/auth)
+- [Hono Framework](https://hono.dev)
+- [Turborepo](https://turbo.build/repo)
