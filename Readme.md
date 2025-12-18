@@ -255,6 +255,8 @@ git push origin main
 
 The CI/CD pipeline automatically appends build metadata to create versions like `1.1.0+42.abc1234.202512181430`.
 
+See **[versioning.md](docs/versioning.md)** for complete documentation on the versioning system.
+
 ### Key Features Implemented
 
 - ✅ **User Authentication**: Firebase Auth with Google sign-in
@@ -291,6 +293,7 @@ The CI/CD pipeline automatically appends build metadata to create versions like 
 
 ## 📚 Documentation
 
+- **[versioning.md](docs/versioning.md)** - Complete versioning system guide
 - **[actions.md](docs/actions.md)** - GitHub Actions CI/CD pipeline documentation
 - **[deploy.md](docs/deploy.md)** - Complete deployment guide
 - **[infra.md](docs/infra.md)** - Cloud infrastructure architecture
