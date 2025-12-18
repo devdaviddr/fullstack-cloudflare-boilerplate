@@ -53,7 +53,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           cd apps/backend
-          BACKEND_DEPLOY_OUTPUT=$(npx wrangler deploy)
+          BACKEND_DEPLOY_OUTPUT=$(npx wrangler deploy --env="")
           BACKEND_URL=$(echo "$BACKEND_DEPLOY_OUTPUT" | grep -o 'https://[^[:space:]]*workers\.dev')
           echo "BACKEND_URL=$BACKEND_URL" >> $GITHUB_ENV
           echo "Backend deployed to: $BACKEND_URL"
@@ -77,6 +77,6 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          FRONTEND_DEPLOY_OUTPUT=$(npx wrangler pages deploy apps/frontend/dist --project-name fullstack-frontend --branch=main)
+          FRONTEND_DEPLOY_OUTPUT=$(npx wrangler pages deploy apps/frontend/dist --project-name fullstack-frontend --branch=main --commit-dirty=true)
           FRONTEND_URL=$(echo "$FRONTEND_DEPLOY_OUTPUT" | grep -o 'https://[^[:space:]]*\.pages\.dev' | head -1)
           echo "Frontend deployed to: $FRONTEND_URL"
