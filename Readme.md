@@ -109,7 +109,7 @@ fullstack-cloudflare-boilerplate/
 
 All endpoints require Firebase authentication via Bearer token.
 
-**API Version**: The API version is dynamically tracked using semantic versioning (e.g., `1.0.42+abc1234.202512181430`) and is available in all responses.
+**API Version**: The API version is dynamically tracked using semantic versioning (e.g., `1.0.42+abc1234.202512181430`) and is available in all responses. Version numbers are automatically generated from the `VERSION` file and CI/CD metadata.
 
 ## 🗄️ Database Schema
 
@@ -234,6 +234,26 @@ pnpm run format           # Format code with Prettier
 # Database
 cd apps/backend && ./setup-local-db.sh  # Setup local D1 database
 ```
+
+### Version Management
+
+This project uses semantic versioning with automated CI/CD deployment. Version numbers are generated in the format `{MAJOR}.{MINOR}.{PATCH}+{BUILD}.{SHA}.{TIMESTAMP}`.
+
+**To bump versions:**
+```bash
+# Minor version bump (new features)
+echo "1.1.0" > VERSION
+
+# Major version bump (breaking changes)  
+echo "2.0.0" > VERSION
+
+# Commit and push to trigger new version
+git add VERSION
+git commit -m "chore: bump version to 1.1.0"
+git push origin main
+```
+
+The CI/CD pipeline automatically appends build metadata to create versions like `1.1.0+42.abc1234.202512181430`.
 
 ### Key Features Implemented
 

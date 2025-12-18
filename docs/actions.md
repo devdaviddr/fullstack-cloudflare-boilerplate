@@ -117,17 +117,39 @@ The pipeline requires these secrets to be configured in your GitHub repository:
 The pipeline automatically generates semantic version numbers for each deployment using the format:
 
 ```
-1.0.{RUN_NUMBER}+{SHA}.{TIMESTAMP}
-├── Major ──┼── Minor ──┼── Patch ──┼── Build Metadata
+{BASE_VERSION}+{RUN_NUMBER}.{SHA}.{TIMESTAMP}
+├── Base Version ──┼── Build ──┼── Git ──┼── Time
 ```
 
 **Components**:
-- **Major**: `1` (base version, manually updated for breaking changes)
-- **Minor**: `0` (manually updated for new features)
-- **Patch**: `{RUN_NUMBER}` (GitHub Actions run number, auto-increments)
-- **Build Metadata**: `{SHA}.{TIMESTAMP}` (Git commit SHA + build timestamp)
+- **Base Version**: Read from `VERSION` file (e.g., `1.0.0`, `1.1.0`, `2.0.0`)
+- **Build Number**: GitHub Actions run number (auto-increments per deployment)
+- **Git SHA**: Short commit hash for traceability
+- **Timestamp**: Build date/time for uniqueness
 
-**Example**: `1.0.42+abc1234.202512181430`
+**Example**: `1.1.0+42.abc1234.202512181430`
+
+### Version Bumping
+
+To bump major or minor versions, update the `VERSION` file in your repository root:
+
+```bash
+# For minor version bump (new features)
+echo "1.1.0" > VERSION
+
+# For major version bump (breaking changes)
+echo "2.0.0" > VERSION
+
+# Then commit and push
+git add VERSION
+git commit -m "chore: bump version to 1.1.0"
+git push origin main
+```
+
+**Version Guidelines**:
+- **Major** (`X.0.0`): Breaking changes, API changes
+- **Minor** (`1.X.0`): New features, backward compatible
+- **Patch** (`1.0.X`): Bug fixes, auto-incremented by CI/CD
 
 **Usage**:
 - **Backend**: Available as `BUILD_VERSION` environment variable in Workers
