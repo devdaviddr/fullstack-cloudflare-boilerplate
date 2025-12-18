@@ -248,6 +248,7 @@ cd apps/backend && ./setup-local-db.sh  # Setup local D1 database
 ## 📚 Documentation
 
 - **[deploy.md](deploy.md)** - Complete deployment guide
+- **[infra.md](infra.md)** - Cloud infrastructure architecture
 - **[schema.md](schema.md)** - Database schema and API documentation
 
 ## 🤝 Contributing
@@ -267,6 +268,7 @@ MIT License - see LICENSE file for details.
 - [Live Demo](https://your-deployed-app.pages.dev)
 - [API Documentation](schema.md)
 - [Deployment Guide](deploy.md)
+- [Infrastructure Guide](infra.md)
 - [Cloudflare Workers](https://workers.cloudflare.com)
 - [Firebase Auth](https://firebase.google.com/docs/auth)
 - [Hono Framework](https://hono.dev)
