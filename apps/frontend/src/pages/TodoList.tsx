@@ -5,6 +5,7 @@ import {
   useUpdateTodo,
   useDeleteTodo,
 } from '../hooks/useTodos'
+import { TodoSkeleton } from '../components/Skeleton'
 
 export default function TodoList() {
   const [newTodo, setNewTodo] = useState('')
@@ -56,10 +57,30 @@ export default function TodoList() {
 
   if (isLoading) {
     return (
-      <div className="h-full bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading todos...</p>
+      <div className="h-full bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <div className="animate-pulse bg-gray-200 rounded h-8 w-48 mb-2"></div>
+            <div className="animate-pulse bg-gray-200 rounded h-4 w-64"></div>
+          </div>
+
+          {/* Add Todo Form Skeleton */}
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1 animate-pulse bg-gray-200 rounded-md h-12"></div>
+              <div className="animate-pulse bg-gray-200 rounded-md h-12 w-24"></div>
+            </div>
+          </div>
+
+          {/* Todo List Skeleton */}
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-4 sm:p-6 border-b border-gray-200">
+              <div className="animate-pulse bg-gray-200 rounded h-6 w-32"></div>
+            </div>
+            <div className="p-4 sm:p-6">
+              <TodoSkeleton count={5} />
+            </div>
+          </div>
         </div>
       </div>
     )
