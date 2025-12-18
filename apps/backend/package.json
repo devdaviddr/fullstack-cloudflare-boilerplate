@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "./setup-local-db.sh && wrangler dev",
     "build": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy",
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
