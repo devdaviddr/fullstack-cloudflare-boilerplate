@@ -4,9 +4,12 @@ import { z } from 'zod'
 export const CreateTodoSchema = z.object({
   text: z
     .string()
-    .min(1, 'Todo text is required')
-    .max(500, 'Todo text must be less than 500 characters')
-    .trim(),
+    .transform(val => val.trim())
+    .refine(val => val.length >= 1, 'Todo text is required')
+    .refine(
+      val => val.length <= 500,
+      'Todo text must be less than 500 characters'
+    ),
 })
 
 export const UpdateTodoSchema = z
@@ -14,14 +17,22 @@ export const UpdateTodoSchema = z
     completed: z.boolean().optional(),
     text: z
       .string()
-      .min(1, 'Todo text is required')
-      .max(500, 'Todo text must be less than 500 characters')
-      .trim()
+      .transform(val => val.trim())
+      .refine(val => val.length >= 1, 'Todo text is required')
+      .refine(
+        val => val.length <= 500,
+        'Todo text must be less than 500 characters'
+      )
       .optional(),
   })
-  .refine(data => data.completed !== undefined || data.text !== undefined, {
-    message: 'At least one field must be provided for update',
-  })
+  .refine(
+    data =>
+      data.completed !== undefined ||
+      (data.text !== undefined && data.text.length > 0),
+    {
+      message: 'At least one field must be provided for update',
+    }
+  )
 
 // Auth schemas
 export const LoginSchema = z.object({
