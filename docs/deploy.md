@@ -2,6 +2,8 @@
 
 This guide explains how to manually deploy the fullstack Cloudflare boilerplate application to Cloudflare's platform.
 
+**Note**: A deployment script `deploy.sh` is available in the project root for automated deployment. However, this guide covers the manual steps for better understanding and troubleshooting.
+
 ## Prerequisites
 
 Before deploying, ensure you have:
@@ -134,14 +136,16 @@ npm run build
 
 This creates a `dist/` directory with the production build.
 
-### 4.2 Update API Configuration
+### 4.2 Configure API URL
 
-Ensure your frontend is configured to call the correct backend URL. Check `apps/frontend/src/lib/api.ts` and update the base URL to point to your deployed Worker:
+The frontend is configured to use the `VITE_API_URL` environment variable for the backend URL. Set this as a Pages secret:
 
-```typescript
-// Update this to your deployed Worker URL
-const API_BASE_URL = 'https://your-worker.your-subdomain.workers.dev'
+```bash
+wrangler pages secret put VITE_API_URL --project-name your-pages-project
+# Enter your deployed Worker URL when prompted: https://your-worker.your-subdomain.workers.dev
 ```
+
+This ensures the frontend calls the correct backend without hardcoding URLs in the code.
 
 ### 4.3 Deploy to Cloudflare Pages
 
@@ -208,8 +212,10 @@ Visit your Pages URL and ensure:
 - Run migrations on the correct database instance
 
 **2. CORS Issues**
-- Check your Worker's CORS configuration in the code
-- Ensure the frontend domain is allowed
+- Check your Worker's CORS configuration in `apps/backend/src/middleware/index.ts`
+- Ensure the frontend domain is allowed in the `origin` function
+- For Cloudflare Pages domains (*.pages.dev), the CORS should automatically allow them
+- If you get "Access-Control-Allow-Origin header has wrong value", redeploy the backend after checking the CORS code
 
 **3. Environment Variables**
 - Use `wrangler secret put` for sensitive data
@@ -243,12 +249,3 @@ wrangler pages secret put VARIABLE_NAME
 - [Wrangler CLI Reference](https://developers.cloudflare.com/workers/wrangler/)
 - [D1 Database Guide](https://developers.cloudflare.com/d1/)
 
-## CI/CD Integration
-
-For automated deployments, consider:
-- GitHub Actions with Cloudflare's official actions
-- Cloudflare's built-in CI/CD for Pages
-- Custom deployment scripts using Wrangler
-
-Example GitHub Action workflow can be found in `.github/workflows/deploy.yml` (if you set it up).</content>
-<parameter name="filePath">/Users/mbpro/Documents/GitHub/fullstack-cloudflare-boilerplate/deploy.md
