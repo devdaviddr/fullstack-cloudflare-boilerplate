@@ -45,7 +45,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           cd apps/backend
-          echo "${{ secrets.FIREBASE_PROJECT_ID }}" | npx wrangler secret put FIREBASE_PROJECT_ID --env="" || echo "${{ secrets.FIREBASE_PROJECT_ID }}" | npx wrangler secret put FIREBASE_PROJECT_ID --env="" --force
+          echo "${{ secrets.FIREBASE_PROJECT_ID }}" | npx wrangler secret put FIREBASE_PROJECT_ID --env="" || true
 
       - name: Deploy backend
         env:
