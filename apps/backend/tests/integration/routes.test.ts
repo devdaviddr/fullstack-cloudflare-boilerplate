@@ -1,17 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { Hono } from 'hono'
+import { Hono, type Context } from 'hono'
+import type { Env, Variables } from '../../src/types'
 import { setupProtectedRoutes } from '../../src/routes/todos'
 
 // Mock auth middleware
 vi.mock('../../src/middleware/auth', () => ({
-  authMiddleware: vi.fn((c, next) => {
+  authMiddleware: vi.fn((c: Context<{ Bindings: Env; Variables: Variables }>, next) => {
     // For tests, set a mock user
     c.set('user', {
       id: 'test-user-id',
+      firebase_uid: 'firebase-uid',
       email: 'test@example.com',
-      firebaseUid: 'firebase-uid',
+      name: 'Test User',
     })
-    c.set('userId', 'test-user-id')
     return next()
   }),
 }))
@@ -27,15 +28,19 @@ const mockDB = {
 
 const mockEnv = {
   DB: mockDB,
+  FIREBASE_PROJECT_ID: 'test-project',
+  FIREBASE_CLIENT_EMAIL: 'test@example.com',
+  FIREBASE_PRIVATE_KEY: 'test-private-key',
+  BUILD_VERSION: '1.0.0',
 }
 
 describe('API Routes Integration', () => {
-  let app: Hono
+  let app: Hono<{ Bindings: Env; Variables: Variables }>
 
   beforeEach(() => {
     app = new Hono()
     // Set up environment with mock DB
-    app.use('*', async (c, next) => {
+    app.use('*', async (c: Context<{ Bindings: Env; Variables: Variables }>, next) => {
       c.env = mockEnv
       await next()
     })
@@ -72,7 +77,7 @@ describe('API Routes Integration', () => {
     it('requires authentication', async () => {
       // Temporarily unmock auth to test unauthenticated request
       const { authMiddleware } = await import('../../src/middleware/auth')
-      ;(authMiddleware as any).mockImplementationOnce(async c => {
+      ;(authMiddleware as any).mockImplementationOnce(async (c: Context<{ Bindings: Env; Variables: Variables }>) => {
         c.status(401)
         return c.json({ error: 'Unauthorized' })
       })
