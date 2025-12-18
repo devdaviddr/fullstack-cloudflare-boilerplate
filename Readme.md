@@ -21,6 +21,7 @@ A modern, production-ready todo application built with React, TypeScript, and Cl
 - [Node.js](https://nodejs.org/) (v18 or higher)
 - [pnpm](https://pnpm.io/) (v8 or higher)
 - [Wrangler](https://developers.cloudflare.com/workers/wrangler/) (Cloudflare CLI)
+- Firebase project (see Configuration below)
 
 ### Installation
 
@@ -31,18 +32,24 @@ A modern, production-ready todo application built with React, TypeScript, and Cl
    pnpm install
    ```
 
-2. **Set up local database:**
-   ```bash
-   cd apps/backend
-   ./setup-local-db.sh
-   ```
+2. **Configure environment:**
+   - Copy `apps/backend/.env.example` to `apps/backend/.env` and update with your Firebase project ID
+   - Copy `apps/frontend/.env.example` to `apps/frontend/.env` and update with your Firebase config
 
 3. **Start development:**
    ```bash
    pnpm run dev
    ```
 
-   Visit [http://localhost:5173](http://localhost:5173) for the frontend and the backend will be available at the configured port.
+   This will:
+   - Automatically set up the local D1 database (first run only)
+   - Start the backend API on [http://localhost:8788](http://localhost:8788)
+   - Start the frontend on [http://localhost:5173](http://localhost:5173)
+
+4. **Open your browser:**
+   - Frontend: [http://localhost:5173](http://localhost:5173)
+   - Sign in with Google to test authentication
+   - Create and manage todos
 
 ## 🏗️ Architecture
 
@@ -280,16 +287,36 @@ See **[versioning.md](docs/versioning.md)** for complete documentation on the ve
 ### Firebase Setup
 
 1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
-2. Enable Google Authentication
-3. Create a service account and download the key
-4. Add credentials to your Cloudflare Worker secrets
+2. Enable Google Authentication in Authentication > Sign-in method
+3. Go to Project Settings > General > Your apps, and create a Web app
+4. Copy the Firebase config values to `apps/frontend/.env`
+5. Copy your Project ID to `apps/backend/.env`
+
+### Environment Variables
+
+**Backend (.env):**
+```bash
+FIREBASE_PROJECT_ID=your-firebase-project-id
+```
+
+**Frontend (.env):**
+```bash
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
+VITE_FIREBASE_APP_ID=1:123456789:web:abcdef123456
+VITE_API_URL=http://localhost:8788
+```
 
 ### Cloudflare Setup
 
 1. Sign up at [cloudflare.com](https://cloudflare.com)
-2. Install Wrangler CLI
-3. Create D1 database: `wrangler d1 create todo-db`
-4. Update `wrangler.toml` with your database ID
+2. Install Wrangler CLI: `npm install -g wrangler`
+3. Login: `wrangler auth login`
+4. Create D1 database: `wrangler d1 create todo-db`
+5. Update `apps/backend/wrangler.toml` with your database ID
 
 ## 📚 Documentation
 
