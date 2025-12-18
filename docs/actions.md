@@ -6,6 +6,7 @@ This document explains the automated CI/CD pipeline that deploys the fullstack C
 
 The pipeline is defined in [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) and runs on GitHub Actions. It automatically:
 
+- Generates semantic version numbers for each deployment
 - Builds the entire monorepo (frontend + backend)
 - Runs database migrations on Cloudflare D1
 - Configures secrets for Workers and Pages
@@ -27,36 +28,42 @@ Runs on `ubuntu-latest` with Node.js 20 and pnpm 8.
 1. **Checkout Code**
    - Uses `actions/checkout@v4` to clone the repository
 
-2. **Setup Tools**
+2. **Generate Semantic Version**
+   - Creates version string in format: `1.0.{RUN_NUMBER}+{SHA}.{TIMESTAMP}`
+   - Example: `1.0.42+abc1234.202512181430`
+   - Sets `BUILD_VERSION` environment variable for use in deployments
+
+3. **Setup Tools**
    - Installs pnpm v8
    - Sets up Node.js 20 with pnpm caching
 
-3. **Install Dependencies**
+4. **Install Dependencies**
    - Runs `pnpm install --frozen-lockfile` for reproducible builds
 
-4. **Build Application**
+5. **Build Application**
    - Runs `pnpm run build` (uses Turborepo to build both apps in parallel)
 
-5. **Run D1 Migrations**
+6. **Run D1 Migrations**
    - Changes to `apps/backend/` directory
    - Executes migration files on the remote D1 database:
      - `0001_create_users_table.sql`
      - `0002_create_todos_table.sql`
    - Uses `--remote` flag to target production database
 
-6. **Set Worker Secrets**
-   - Attempts to set `FIREBASE_PROJECT_ID` secret for the Worker
+7. **Set Worker Secrets**
+   - Sets `FIREBASE_PROJECT_ID` and `BUILD_VERSION` secrets for the Worker
    - Uses `--env=""` to target production environment
-   - Continues if secret already exists (`|| true`)
+   - Continues if secrets already exist (`|| true`)
 
-7. **Deploy Backend**
+8. **Deploy Backend**
    - Deploys the Worker using `wrangler deploy --env=""`
    - Captures the production Worker URL
    - Sets `BACKEND_URL` environment variable for frontend
 
-8. **Set Pages Secrets**
+9. **Set Pages Secrets**
    - Sets multiple secrets for the Pages project:
      - `VITE_API_URL`: Points to the deployed Worker URL
+     - `VITE_BUILD_VERSION`: Semantic version for the frontend
      - Firebase configuration variables (API key, auth domain, etc.)
    - Uses `--project-name fullstack-frontend`
    - Continues if secrets already exist
@@ -80,6 +87,7 @@ The pipeline requires these secrets to be configured in your GitHub repository:
 
 ### Pages Secrets
 - `VITE_API_URL`: Auto-set to Worker URL (doesn't need manual config)
+- `VITE_BUILD_VERSION`: Auto-set semantic version (doesn't need manual config)
 - `VITE_FIREBASE_API_KEY`: Firebase API key
 - `VITE_FIREBASE_AUTH_DOMAIN`: Firebase auth domain
 - `VITE_FIREBASE_PROJECT_ID`: Firebase project ID
@@ -103,6 +111,29 @@ The pipeline requires these secrets to be configured in your GitHub repository:
 ### Workers Project
 - Project name: `fullstack-backend` (defined in `wrangler.toml`)
 - Environment: Production (top-level config)
+
+## Semantic Versioning
+
+The pipeline automatically generates semantic version numbers for each deployment using the format:
+
+```
+1.0.{RUN_NUMBER}+{SHA}.{TIMESTAMP}
+├── Major ──┼── Minor ──┼── Patch ──┼── Build Metadata
+```
+
+**Components**:
+- **Major**: `1` (base version, manually updated for breaking changes)
+- **Minor**: `0` (manually updated for new features)
+- **Patch**: `{RUN_NUMBER}` (GitHub Actions run number, auto-increments)
+- **Build Metadata**: `{SHA}.{TIMESTAMP}` (Git commit SHA + build timestamp)
+
+**Example**: `1.0.42+abc1234.202512181430`
+
+**Usage**:
+- **Backend**: Available as `BUILD_VERSION` environment variable in Workers
+- **Frontend**: Available as `VITE_BUILD_VERSION` environment variable in React app
+- **API Responses**: Included in all API endpoint responses
+- **UI Display**: Shown in app footer for user visibility
 
 ## Environment Variables
 

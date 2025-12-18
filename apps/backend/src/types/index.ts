@@ -3,6 +3,7 @@ export interface Env extends Record<string, unknown> {
   FIREBASE_PROJECT_ID: string
   FIREBASE_CLIENT_EMAIL: string
   FIREBASE_PRIVATE_KEY: string
+  BUILD_VERSION: string
 }
 
 export interface User {

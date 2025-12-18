@@ -12,6 +12,7 @@ A modern, production-ready todo application built with React, TypeScript, and Cl
 - **🔄 Monorepo Architecture**: Efficient development with Turborepo
 - **📦 TypeScript**: Full type safety across frontend and backend
 - **🎨 Modern UI**: Clean, accessible interface with dark/light mode support
+- **🏷️ Semantic Versioning**: Automated version tracking with CI/CD pipeline
 
 ## 🚀 Quick Start
 
@@ -107,6 +108,8 @@ fullstack-cloudflare-boilerplate/
 - `DELETE /api/todos/:id` - Delete todo
 
 All endpoints require Firebase authentication via Bearer token.
+
+**API Version**: The API version is dynamically tracked using semantic versioning (e.g., `1.0.42+abc1234.202512181430`) and is available in all responses.
 
 ## 🗄️ Database Schema
 
