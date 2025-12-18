@@ -3,13 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Login() {
-  const {
-    signInWithGoogle,
-    signInWithEmail,
-    signUpWithEmail,
-    loading,
-    user,
-  } = useAuth()
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, loading, user } =
+    useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [isSignUp, setIsSignUp] = useState(false)
@@ -22,7 +17,6 @@ export default function Login() {
   useEffect(() => {
     if (user && !loading) {
       const from = location.state?.from?.pathname || '/'
-      console.log('Login: Redirecting authenticated user to:', from)
       navigate(from, { replace: true })
     }
   }, [user, loading])
@@ -38,8 +32,8 @@ export default function Login() {
       } else {
         await signInWithEmail(email, password)
       }
-    } catch (error: any) {
-      setError(error.message || 'Authentication failed')
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Authentication failed')
     } finally {
       setAuthLoading(false)
     }
@@ -52,9 +46,8 @@ export default function Login() {
     try {
       await signInWithGoogle()
       // User will be redirected by the useEffect above
-    } catch (error: any) {
-      setError(error.message || 'Google sign in failed')
-      setAuthLoading(false)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Google sign in failed')
     }
   }
 

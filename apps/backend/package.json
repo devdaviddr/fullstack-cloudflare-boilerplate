@@ -4,21 +4,30 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "./setup-local-db.sh && wrangler dev",
     "build": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy",
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "hono": "^3.12.0"
+    "@hono/zod-validator": "^0.7.6",
+    "hono": "^3.12.0",
+    "winston": "^3.19.0",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.11.1",
     "@cloudflare/workers-types": "^4.20231121.0",
+    "@types/node": "^25.0.3",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "eslint": "^8.55.0",
+    "msw": "^2.12.4",
     "typescript": "^5.2.2",
+    "vitest": "^3.2.4",
     "wrangler": "^4.54.0"
   }
 }
