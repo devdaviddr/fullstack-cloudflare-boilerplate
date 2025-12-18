@@ -136,7 +136,28 @@ See [schema.md](schema.md) for complete database documentation.
 
 ## 🚀 Deployment
 
-### Automated Deployment (Recommended)
+### Automated CI/CD (Recommended)
+
+This project includes a GitHub Actions pipeline that automatically deploys to Cloudflare on every push to the `main` branch.
+
+**What it does:**
+- ✅ Builds both frontend and backend
+- ✅ Runs D1 database migrations
+- ✅ Sets up Worker and Pages secrets
+- ✅ Deploys backend to Cloudflare Workers
+- ✅ Deploys frontend to Cloudflare Pages
+- ✅ Provides production URLs for both services
+
+**Setup Requirements:**
+- GitHub repository secrets configured (see [actions.md](docs/actions.md))
+- Cloudflare API token with Workers and Pages permissions
+- D1 database pre-created in Cloudflare
+
+**Trigger:** Automatic deployment on push to `main` branch.
+
+See [docs/actions.md](docs/actions.md) for complete pipeline documentation.
+
+### Automated Deployment Script
 
 Use the automated deployment script to deploy everything at once:
 
@@ -247,9 +268,10 @@ cd apps/backend && ./setup-local-db.sh  # Setup local D1 database
 
 ## 📚 Documentation
 
-- **[deploy.md](deploy.md)** - Complete deployment guide
-- **[infra.md](infra.md)** - Cloud infrastructure architecture
-- **[schema.md](schema.md)** - Database schema and API documentation
+- **[actions.md](docs/actions.md)** - GitHub Actions CI/CD pipeline documentation
+- **[deploy.md](docs/deploy.md)** - Complete deployment guide
+- **[infra.md](docs/infra.md)** - Cloud infrastructure architecture
+- **[schema.md](docs/schema.md)** - Database schema and API documentation
 
 ## 🤝 Contributing
 
