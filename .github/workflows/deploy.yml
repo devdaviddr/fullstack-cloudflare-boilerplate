@@ -62,7 +62,7 @@ jobs:
           cd apps/backend
           npx wrangler d1 execute todo-db --remote --file=./migrations/0001_create_users_table.sql
           npx wrangler d1 execute todo-db --remote --file=./migrations/0002_create_todos_table.sql
-          echo "${{ secrets.FIREBASE_PROJECT_ID }}" | npx wrangler secret put FIREBASE_PROJECT_ID
+          echo "${{ secrets.FIREBASE_PROJECT_ID }}" | npx wrangler secret put FIREBASE_PROJECT_ID --env=""
           BACKEND_DEPLOY_OUTPUT=$(npx wrangler deploy)
           BACKEND_URL=$(echo "$BACKEND_DEPLOY_OUTPUT" | grep -o 'https://[^[:space:]]*workers\.dev')
           echo "BACKEND_URL=$BACKEND_URL" >> $GITHUB_ENV
