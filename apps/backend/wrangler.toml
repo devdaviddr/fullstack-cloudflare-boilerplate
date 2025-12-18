@@ -1,0 +1,21 @@
+name = "fullstack-backend"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+# Development environment configuration
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+[dev]
+port = 8788
+local_protocol = "http"
+
+[vars]
+MY_VARIABLE = "production_value"
+FIREBASE_PROJECT_ID = "groq-ai-batch-processor"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "todo-db"
+database_id = "8bfb9c23-cc7b-4a59-b054-933d7cf01adb"
+migrations_dir = "migrations"
