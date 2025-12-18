@@ -136,9 +136,33 @@ See [schema.md](schema.md) for complete database documentation.
 
 ## 🚀 Deployment
 
+### Automated Deployment (Recommended)
+
+Use the automated deployment script to deploy everything at once:
+
+```bash
+pnpm run deploy
+```
+
+This script will:
+- ✅ Create and configure D1 database
+- ✅ Run database migrations
+- ✅ **Automatically load secrets from `.env` files**
+- ✅ Deploy backend to Cloudflare Workers
+- ✅ Build and deploy frontend to Cloudflare Pages
+- ✅ Configure API URLs and environment variables automatically
+
+**Prerequisites:**
+- Wrangler CLI installed and authenticated (`wrangler auth login`)
+- `.env` files configured with your secrets (see below)
+
+**Required `.env` files:**
+- `apps/backend/.env` - Backend secrets (FIREBASE_PROJECT_ID, etc.)
+- `apps/frontend/.env` - Frontend config (VITE_FIREBASE_*, VITE_API_URL, etc.)
+
 ### Manual Deployment
 
-Follow the comprehensive deployment guide in [deploy.md](deploy.md) for step-by-step instructions.
+Follow the comprehensive deployment guide in [docs/deploy.md](docs/deploy.md) for step-by-step instructions.
 
 ### Quick Deploy
 

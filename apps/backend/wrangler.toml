@@ -14,17 +14,8 @@ local_protocol = "http"
 MY_VARIABLE = "production_value"
 FIREBASE_PROJECT_ID = "groq-ai-batch-processor"
 
-[[kv_namespaces]]
-binding = "MY_KV_NAMESPACE"
-id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-preview_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
-[[r2_buckets]]
-binding = "MY_BUCKET"
-bucket_name = "my-bucket"
-
 [[d1_databases]]
 binding = "DB"
 database_name = "todo-db"
-database_id = "local-todo-db"
+database_id = "8bfb9c23-cc7b-4a59-b054-933d7cf01adb"
 migrations_dir = "migrations"
