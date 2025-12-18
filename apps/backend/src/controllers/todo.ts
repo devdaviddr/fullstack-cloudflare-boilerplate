@@ -1,5 +1,6 @@
 import type { Context } from 'hono'
 import type { Env, Variables } from '../types'
+import { logger } from '../logger'
 
 export class TodoController {
   /**
@@ -17,7 +18,10 @@ export class TodoController {
 
       return c.json(results || [])
     } catch (error) {
-      console.error('Error fetching todos:', error)
+      logger.error('Error fetching todos', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userId: user.id,
+      })
       return c.json({ error: 'Failed to fetch todos' }, 500)
     }
   }
@@ -69,7 +73,10 @@ export class TodoController {
         201
       )
     } catch (error) {
-      console.error('Error creating todo:', error)
+      logger.error('Error creating todo', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userId: user.id,
+      })
       return c.json({ error: 'Failed to create todo' }, 500)
     }
   }
@@ -153,7 +160,11 @@ export class TodoController {
 
       return c.json(updated)
     } catch (error) {
-      console.error('Error updating todo:', error)
+      logger.error('Error updating todo', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userId: user.id,
+        todoId: id,
+      })
       return c.json({ error: 'Failed to update todo' }, 500)
     }
   }
@@ -178,7 +189,11 @@ export class TodoController {
 
       return c.json({ success: true })
     } catch (error) {
-      console.error('Error deleting todo:', error)
+      logger.error('Error deleting todo', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userId: user.id,
+        todoId: id,
+      })
       return c.json({ error: 'Failed to delete todo' }, 500)
     }
   }

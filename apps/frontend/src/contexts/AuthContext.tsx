@@ -38,7 +38,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     // Subscribe to auth state changes
     const unsubscribe = onAuthStateChanged(auth, currentUser => {
-      console.log('Auth state changed:', currentUser?.email || 'null')
       setUser(currentUser)
       setLoading(false)
     })
@@ -47,40 +46,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const signInWithGoogle = async () => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider)
-      console.log('Google sign-in successful:', result.user.email)
-    } catch (error) {
-      console.error('Google sign in error:', error)
-      throw error
-    }
+    await signInWithPopup(auth, googleProvider)
   }
 
   const signInWithEmail = async (email: string, password: string) => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password)
-    } catch (error) {
-      console.error('Email sign in error:', error)
-      throw error
-    }
+    await signInWithEmailAndPassword(auth, email, password)
   }
 
   const signUpWithEmail = async (email: string, password: string) => {
-    try {
-      await createUserWithEmailAndPassword(auth, email, password)
-    } catch (error) {
-      console.error('Email sign up error:', error)
-      throw error
-    }
+    await createUserWithEmailAndPassword(auth, email, password)
   }
 
   const logout = async () => {
-    try {
-      await signOut(auth)
-    } catch (error) {
-      console.error('Logout error:', error)
-      throw error
-    }
+    await signOut(auth)
   }
 
   const getIdToken = async (): Promise<string | null> => {
@@ -95,13 +73,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (exp - now < 300) {
         // Less than 5 minutes left
-        console.log('[Auth] Token expiring soon, refreshing proactively...')
         return await user.getIdToken(true) // Force refresh
       }
 
       return tokenResult.token
     } catch (error) {
-      console.error('Error getting ID token:', error)
       return null
     }
   }

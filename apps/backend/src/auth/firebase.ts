@@ -1,4 +1,5 @@
 import type { User, JWTPayload, JWTHeader } from '../types'
+import { logger } from '../logger'
 
 /**
  * Decodes a base64url-encoded string (used in JWT)
@@ -39,7 +40,9 @@ async function getFirebasePublicKeys(): Promise<Record<string, string>> {
     }
     return (await response.json()) as Record<string, string>
   } catch (error) {
-    console.error('[Firebase] Error fetching public keys:', error)
+    logger.error('Error fetching public keys', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
     throw new Error('Failed to fetch public keys for token verification')
   }
 }
@@ -160,38 +163,26 @@ async function verifyJWTSignature(
   header: JWTHeader,
   publicKeys: Record<string, string>
 ): Promise<boolean> {
-  console.log('[Firebase] Verifying signature with kid:', header.kid)
-  console.log('[Firebase] Available key IDs:', Object.keys(publicKeys))
+  logger.debug('Verifying signature', { kid: header.kid })
 
   const publicKeyPem = publicKeys[header.kid]
   if (!publicKeyPem) {
+    logger.error('Public key not found', {
+      kid: header.kid,
+      availableKeys: Object.keys(publicKeys),
+    })
     throw new Error(`Public key not found for kid: ${header.kid}`)
   }
 
   try {
-    console.log('[Firebase] Importing public key...')
     const publicKey = await importPublicKey(publicKeyPem)
-    console.log('[Firebase] Public key imported successfully')
 
     const parts = token.split('.')
-
-    // Prepare data to verify (header.payload)
     const dataToVerify = `${parts[0]}.${parts[1]}`
     const encoder = new TextEncoder()
     const data = encoder.encode(dataToVerify)
-
-    // Decode signature
     const signature = base64UrlToUint8Array(parts[2])
 
-    console.log('[Firebase] Verifying signature with Web Crypto API...')
-    console.log(
-      '[Firebase] Data length:',
-      data.length,
-      'Signature length:',
-      signature.length
-    )
-
-    // Verify using Web Crypto API
     const isValid = await crypto.subtle.verify(
       'RSASSA-PKCS1-v1_5',
       publicKey,
@@ -199,10 +190,15 @@ async function verifyJWTSignature(
       data
     )
 
-    console.log('[Firebase] Signature verification result:', isValid)
+    if (!isValid) {
+      logger.warn('Signature verification failed')
+    }
+
     return isValid
   } catch (error) {
-    console.error('[Firebase] Signature verification error:', error)
+    logger.error('Signature verification error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
     return false
   }
 }
@@ -225,42 +221,28 @@ export async function verifyFirebaseToken(
   token: string,
   projectId: string
 ): Promise<User> {
-  console.log('[Firebase] Starting token verification for project:', projectId)
+  logger.debug('Starting token verification', { projectId })
 
-  // Parse JWT structure
   const parts = token.split('.')
   if (parts.length !== 3) {
     throw new Error('Invalid JWT format')
   }
 
-  // Decode header and payload
   let header: JWTHeader
   let payload: JWTPayload
 
   try {
     header = JSON.parse(base64UrlDecode(parts[0]))
     payload = JSON.parse(base64UrlDecode(parts[1]))
-    console.log('[Firebase] Token header:', header)
-    console.log(
-      '[Firebase] Token payload (user):',
-      payload.email || payload.sub
-    )
   } catch (error) {
     throw new Error('Failed to decode token')
   }
 
   // Validate claims
   const now = Math.floor(Date.now() / 1000)
-  console.log(
-    '[Firebase] Current time:',
-    now,
-    'Token exp:',
-    payload.exp,
-    'Token iat:',
-    payload.iat
-  )
 
   if (!payload.exp || payload.exp < now) {
+    logger.warn('Token expired', { exp: payload.exp, now })
     throw new Error('Token expired')
   }
 
@@ -269,23 +251,16 @@ export async function verifyFirebaseToken(
   }
 
   if (payload.aud !== projectId) {
-    console.error(
-      '[Firebase] Audience mismatch. Expected:',
-      projectId,
-      'Got:',
-      payload.aud
-    )
+    logger.error('Audience mismatch', { expected: projectId, got: payload.aud })
     throw new Error('Invalid token audience')
   }
 
   const expectedIssuer = `https://securetoken.google.com/${projectId}`
   if (payload.iss !== expectedIssuer) {
-    console.error(
-      '[Firebase] Issuer mismatch. Expected:',
-      expectedIssuer,
-      'Got:',
-      payload.iss
-    )
+    logger.error('Issuer mismatch', {
+      expected: expectedIssuer,
+      got: payload.iss,
+    })
     throw new Error('Invalid token issuer')
   }
 
@@ -293,12 +268,10 @@ export async function verifyFirebaseToken(
     throw new Error('Token missing subject')
   }
 
-  console.log('[Firebase] All claims validated successfully')
+  logger.debug('Claims validated successfully')
 
   // Verify cryptographic signature
-  console.log('[Firebase] Fetching public keys...')
   const publicKeys = await getFirebasePublicKeys()
-  console.log('[Firebase] Public keys fetched successfully')
 
   const isValid = await verifyJWTSignature(token, header, publicKeys)
 
@@ -306,7 +279,11 @@ export async function verifyFirebaseToken(
     throw new Error('Invalid token signature')
   }
 
-  console.log('[Firebase] Token verified successfully!')
+  logger.info('Token verified successfully', {
+    userId: payload.sub,
+    email: payload.email,
+  })
+
   return {
     id: payload.sub,
     firebase_uid: payload.sub,

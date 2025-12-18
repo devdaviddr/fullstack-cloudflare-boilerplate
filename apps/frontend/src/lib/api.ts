@@ -8,17 +8,10 @@ export const api = axios.create({
 
 // Add request interceptor to include Firebase auth token
 api.interceptors.request.use(async config => {
-  try {
-    const user = auth.currentUser
-    if (user) {
-      const token = await user.getIdToken()
-      config.headers.Authorization = `Bearer ${token}`
-      console.log('[API] Request with auth token for user:', user.email)
-    } else {
-      console.warn('[API] No authenticated user found for request')
-    }
-  } catch (error) {
-    console.error('[API] Error getting auth token:', error)
+  const user = auth.currentUser
+  if (user) {
+    const token = await user.getIdToken()
+    config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
@@ -30,40 +23,12 @@ api.interceptors.response.use(
     // Handle authentication errors with retry
     if (error.response?.status === 401 && !error.config._retry) {
       error.config._retry = true
-      try {
-        console.log('[API] Token expired, attempting refresh...')
-        const user = auth.currentUser
-        if (user) {
-          const newToken = await user.getIdToken(true) // Force refresh
-          error.config.headers.Authorization = `Bearer ${newToken}`
-          return api.request(error.config) // Retry the request
-        }
-      } catch (refreshError) {
-        console.error('[API] Token refresh failed:', refreshError)
+      const user = auth.currentUser
+      if (user) {
+        const newToken = await user.getIdToken(true) // Force refresh
+        error.config.headers.Authorization = `Bearer ${newToken}`
+        return api.request(error.config) // Retry the request
       }
-    }
-
-    // Log errors in development
-    console.error('[API] Error:', error)
-
-    // Handle authentication errors
-    if (error.response?.status === 401) {
-      console.error(
-        '[API] Authentication error - token may be expired or invalid'
-      )
-      console.error('[API] Error details:', error.response?.data)
-    }
-
-    // Handle network errors
-    if (
-      error.code === 'ERR_NETWORK' ||
-      error.code === 'ERR_CONNECTION_REFUSED'
-    ) {
-      console.error('[API] Network error - backend may not be running')
-      console.error(
-        '[API] Check if backend is running at:',
-        api.defaults.baseURL
-      )
     }
 
     // Return a standardized error

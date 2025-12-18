@@ -19,7 +19,6 @@ export default function TodoList() {
         await createTodo.mutateAsync({ text: newTodo.trim() })
         setNewTodo('')
       } catch (error) {
-        console.error('Failed to add todo:', error)
         alert('Failed to add todo. Please try again.')
       }
     }
@@ -34,7 +33,6 @@ export default function TodoList() {
           data: { completed: !todo.completed },
         })
       } catch (error) {
-        console.error('Failed to update todo:', error)
         alert('Failed to update todo. Please try again.')
       }
     }
@@ -45,7 +43,6 @@ export default function TodoList() {
       try {
         await deleteTodo.mutateAsync(id)
       } catch (error) {
-        console.error('Failed to delete todo:', error)
         alert('Failed to delete todo. Please try again.')
       }
     }

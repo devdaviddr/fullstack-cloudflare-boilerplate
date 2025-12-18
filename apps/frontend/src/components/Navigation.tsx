@@ -9,12 +9,8 @@ export default function Navigation() {
   const location = useLocation()
 
   const handleLogout = async () => {
-    try {
-      await logout()
-      navigate('/login')
-    } catch (error) {
-      console.error('Logout error:', error)
-    }
+    await logout()
+    navigate('/login')
   }
 
   const handleNavigation = (path: string) => {
