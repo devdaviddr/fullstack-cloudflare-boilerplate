@@ -7,7 +7,7 @@ export function setupPublicRoutes(
   app.get('/', c => {
     return c.json({
       name: 'Fullstack Cloudflare Boilerplate API',
-      version: '1.0.0',
+      version: c.env.BUILD_VERSION || '1.0.0',
       status: 'online',
     })
   })

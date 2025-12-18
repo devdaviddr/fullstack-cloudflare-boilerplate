@@ -12,6 +12,7 @@ A modern, production-ready todo application built with React, TypeScript, and Cl
 - **🔄 Monorepo Architecture**: Efficient development with Turborepo
 - **📦 TypeScript**: Full type safety across frontend and backend
 - **🎨 Modern UI**: Clean, accessible interface with dark/light mode support
+- **🏷️ Semantic Versioning**: Automated version tracking with CI/CD pipeline
 
 ## 🚀 Quick Start
 
@@ -107,6 +108,8 @@ fullstack-cloudflare-boilerplate/
 - `DELETE /api/todos/:id` - Delete todo
 
 All endpoints require Firebase authentication via Bearer token.
+
+**API Version**: The API version is dynamically tracked using semantic versioning (e.g., `1.0.42+abc1234.202512181430`) and is available in all responses. Version numbers are automatically generated from the `VERSION` file and CI/CD metadata.
 
 ## 🗄️ Database Schema
 
@@ -232,6 +235,28 @@ pnpm run format           # Format code with Prettier
 cd apps/backend && ./setup-local-db.sh  # Setup local D1 database
 ```
 
+### Version Management
+
+This project uses semantic versioning with automated CI/CD deployment. Version numbers are generated in the format `{MAJOR}.{MINOR}.{PATCH}+{BUILD}.{SHA}.{TIMESTAMP}`.
+
+**To bump versions:**
+```bash
+# Minor version bump (new features)
+echo "1.1.0" > VERSION
+
+# Major version bump (breaking changes)  
+echo "2.0.0" > VERSION
+
+# Commit and push to trigger new version
+git add VERSION
+git commit -m "chore: bump version to 1.1.0"
+git push origin main
+```
+
+The CI/CD pipeline automatically appends build metadata to create versions like `1.1.0+42.abc1234.202512181430`.
+
+See **[versioning.md](docs/versioning.md)** for complete documentation on the versioning system.
+
 ### Key Features Implemented
 
 - ✅ **User Authentication**: Firebase Auth with Google sign-in
@@ -268,6 +293,7 @@ cd apps/backend && ./setup-local-db.sh  # Setup local D1 database
 
 ## 📚 Documentation
 
+- **[versioning.md](docs/versioning.md)** - Complete versioning system guide
 - **[actions.md](docs/actions.md)** - GitHub Actions CI/CD pipeline documentation
 - **[deploy.md](docs/deploy.md)** - Complete deployment guide
 - **[infra.md](docs/infra.md)** - Cloud infrastructure architecture
