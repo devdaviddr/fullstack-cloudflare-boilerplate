@@ -76,27 +76,6 @@ api.interceptors.response.use(
   }
 )
 
-export interface LogsResponse {
-  logs: string[]
-  total: number
-}
-
-export interface ActionResponse {
-  success: boolean
-  message: string
-  timestamp: string
-}
-
-export interface HealthResponse {
-  status: string
-  timestamp: string
-  stats: {
-    uptime: number
-    responseTime: number
-    requestCount: number
-  }
-}
-
 export interface Todo {
   id: string
   text: string

@@ -5,7 +5,6 @@ import { AuthProvider } from './contexts/AuthContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import Navigation from './components/Navigation'
 import ProtectedRoute from './components/ProtectedRoute'
-import Dashboard from './pages/Dashboard'
 import TodoList from './pages/TodoList'
 import Login from './pages/Login'
 
@@ -25,14 +24,6 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <TodoList />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/settings"
-                    element={
-                      <ProtectedRoute>
-                        <Dashboard />
                       </ProtectedRoute>
                     }
                   />
