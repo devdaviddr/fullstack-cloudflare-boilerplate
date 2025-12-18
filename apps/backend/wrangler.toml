@@ -12,7 +12,6 @@ local_protocol = "http"
 
 [vars]
 MY_VARIABLE = "production_value"
-FIREBASE_PROJECT_ID = "groq-ai-batch-processor"
 
 [[d1_databases]]
 binding = "DB"
