@@ -29,8 +29,12 @@ function App() {
                   />
                 </Routes>
               </div>
-              <footer className="bg-gray-50 border-t px-4 py-2 text-xs text-gray-500 text-center">
-                v{import.meta.env.VITE_BUILD_VERSION || 'dev'}
+              <footer className="bg-blue-600 text-white px-6 py-3 text-sm font-medium text-center border-t-4 border-blue-700 shadow-lg">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-blue-200">🚀</span>
+                  <span>Version: <span className="font-bold text-yellow-300">{import.meta.env.VITE_BUILD_VERSION || 'dev'}</span></span>
+                  <span className="text-blue-200">✨</span>
+                </div>
               </footer>
             </div>
           </Router>
