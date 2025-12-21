@@ -2,18 +2,6 @@
 
 A modern, production-ready todo application built with React, TypeScript, and Cloudflare's edge infrastructure. Features Firebase authentication, real-time updates, and a responsive mobile-first design.
 
-## ✨ Features
-
-- **🔐 Firebase Authentication**: Secure user authentication with Google sign-in
-- **📱 Mobile-First Design**: Responsive UI built with Tailwind CSS
-- **⚡ Real-time Updates**: Instant synchronization using React Query
-- **🗄️ Cloudflare D1 Database**: Serverless SQLite database for data persistence
-- **🌐 Edge Deployment**: Global CDN deployment on Cloudflare Workers & Pages
-- **🔄 Monorepo Architecture**: Efficient development with Turborepo
-- **📦 TypeScript**: Full type safety across frontend and backend
-- **🎨 Modern UI**: Clean, accessible interface with dark/light mode support
-- **🏷️ Semantic Versioning**: Automated version tracking with CI/CD pipeline
-
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -142,7 +130,7 @@ The application uses Cloudflare D1 with two main tables:
 - updated_at: DATETIME
 ```
 
-See [schema.md](schema.md) for complete database documentation.
+See [docs/schema.md](docs/schema.md) for complete database documentation.
 
 ## 🚀 Deployment
 
@@ -206,17 +194,9 @@ Follow the comprehensive deployment guide in [docs/deploy.md](docs/deploy.md) fo
 2. **Frontend:**
    ```bash
    cd apps/frontend
-   npm run build
+   pnpm run build
    wrangler pages deploy dist
    ```
-
-### Environment Setup
-
-**Required Environment Variables:**
-
-- `FIREBASE_PROJECT_ID` - Your Firebase project ID
-- `FIREBASE_CLIENT_EMAIL` - Firebase service account email
-- `FIREBASE_PRIVATE_KEY` - Firebase service account private key
 
 ## 🛠️ Development
 
@@ -282,6 +262,33 @@ See **[versioning.md](docs/versioning.md)** for complete documentation on the ve
 3. **Frontend Components**: Add to `apps/frontend/src/components/`
 4. **Types**: Update shared types in `packages/types/src/`
 
+## 🧪 Testing
+
+The project includes comprehensive unit and integration tests for the backend.
+
+### Running Tests
+
+```bash
+# Run all tests
+pnpm run test
+
+# Run tests for backend only
+pnpm run test --filter backend
+
+# Run tests in watch mode
+cd apps/backend && pnpm run test:watch
+
+# Run tests with coverage
+cd apps/backend && pnpm run test:coverage
+```
+
+### Test Structure
+
+- **Unit Tests**: `apps/backend/tests/unit/`
+  - Controllers, middleware, rate limiting, schemas
+- **Integration Tests**: `apps/backend/tests/integration/`
+  - End-to-end API route testing
+
 ## 🔧 Configuration
 
 ### Firebase Setup
@@ -291,6 +298,40 @@ See **[versioning.md](docs/versioning.md)** for complete documentation on the ve
 3. Go to Project Settings > General > Your apps, and create a Web app
 4. Copy the Firebase config values to `apps/frontend/.env`
 5. Copy your Project ID to `apps/backend/.env`
+
+### GitHub Repository Secrets (CI/CD)
+
+To enable automated deployments via GitHub Actions, configure the following secrets in your repository:
+
+**To add secrets:**
+1. Go to your GitHub repository
+2. Navigate to **Settings** > **Secrets and variables** > **Actions**
+3. Click **New repository secret**
+4. Add each secret below with its corresponding value
+
+**Required Secrets:**
+
+**Cloudflare Authentication** (2 secrets)
+- `CLOUDFLARE_API_TOKEN` - Create at [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens)
+  - Required permissions: Workers:Edit, Pages:Edit, D1:Edit, Account:Read
+- `CLOUDFLARE_ACCOUNT_ID` - Find in Cloudflare Dashboard URL or Workers & Pages overview
+
+**Worker Configuration** (1 secret)
+- `FIREBASE_PROJECT_ID` - Your Firebase project ID (same as backend .env)
+
+**Frontend Build Variables** (7-8 secrets)
+- `VITE_API_URL` - Your production Worker URL (e.g., `https://your-worker.workers.dev`)
+- `VITE_FIREBASE_API_KEY` - Firebase API key
+- `VITE_FIREBASE_AUTH_DOMAIN` - Firebase auth domain (e.g., `your-project.firebaseapp.com`)
+- `VITE_FIREBASE_PROJECT_ID` - Firebase project ID
+- `VITE_FIREBASE_STORAGE_BUCKET` - Firebase storage bucket
+- `VITE_FIREBASE_MESSAGING_SENDER_ID` - Firebase messaging sender ID
+- `VITE_FIREBASE_APP_ID` - Firebase app ID
+- `VITE_FIREBASE_MEASUREMENT_ID` - Firebase measurement ID (optional, for Google Analytics)
+
+**Total: 10-11 secrets required**
+
+Once configured, every push to `main` branch will automatically deploy to production. See [docs/actions.md](docs/actions.md) for complete CI/CD pipeline documentation.
 
 ### Environment Variables
 
@@ -329,22 +370,15 @@ VITE_API_URL=http://localhost:8788
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Run tests: `pnpm run lint && pnpm run typecheck`
-5. Submit a pull request
-
-## 📄 License
-
-MIT License - see LICENSE file for details.
-
-## 🔗 Links
-
-- [Live Demo](https://your-deployed-app.pages.dev)
-- [API Documentation](schema.md)
-- [Deployment Guide](deploy.md)
-- [Infrastructure Guide](infra.md)
-- [Cloudflare Workers](https://workers.cloudflare.com)
-- [Firebase Auth](https://firebase.google.com/docs/auth)
-- [Hono Framework](https://hono.dev)
-- [Turborepo](https://turbo.build/repo)
+4. Run quality checks:
+   ```bash
+   pnpm run lint        # Lint code
+   pnpm run typecheck   # TypeScript checks
+   pnpm run test        # Run tests
+   pnpm run format      # Format code
+   ```
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
